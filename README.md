@@ -136,21 +136,21 @@ nuvora-fs/
    ```
 3. Create a `.env` file in the `backend/` directory (refer to `.env.example`):
    ```env
-   PORT=8000
-   URL=mongodb+srv://<username>:<password>@cluster.mongodb.net/nuvora_db?retryWrites=true&w=majority
+   PORT=your_port_number
+   URL=your_mongodb_connection_string
    JWT_SECRET=your_jwt_secret_key
-   EMAIL_USER=your_email@gmail.com
-   EMAIL_PASS=your_gmail_app_password
-   CLOUDINARY_CLOUD_NAME=your_cloudinary_name
-   CLOUDINARY_API_KEY=your_cloudinary_key
-   CLOUDINARY_API_SECRET=your_cloudinary_secret
+   EMAIL_USER=your_email_address
+   EMAIL_PASS=your_email_app_password
+   CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+   CLOUDINARY_API_KEY=your_cloudinary_api_key
+   CLOUDINARY_API_SECRET=your_cloudinary_api_secret
    GEMINI_API_KEY=your_gemini_api_key
    ```
 4. Start the backend development server:
    ```bash
    npm start
    ```
-   *Server will run on `http://localhost:8000`*
+   *Server will run on `http://localhost:<PORT>`*
 
 ---
 
