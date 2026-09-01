@@ -1,0 +1,36 @@
+# Node Modules
+node_modules/
+*/node_modules/
+
+# Environment Variables & API Keys (STRICTLY IGNORED)
+.env
+.env.*
+*.env
+*/.env
+*/.env.*
+*/*.env
+!.env.example
+!*/.env.example
+
+# Production Builds
+dist/
+dist-ssr/
+build/
+*/dist/
+*/build/
+
+# Logs & Debug
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.local
+
+NUVORA_API_DOCUMENTATION.html
