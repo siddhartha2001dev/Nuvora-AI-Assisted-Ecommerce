@@ -37,7 +37,7 @@ export const userRegisterSchema = yup.object({
         .default(""),
     role: yup
         .string()
-        .oneOf(["Buyer", "Seller"], "Role must be either 'Buyer' or 'Seller'")
+        .oneOf(["Buyer", "Admin"], "Role must be either 'Buyer' or 'Admin'")
         .default("Buyer"),
     shopName: yup
         .string()
@@ -96,7 +96,13 @@ export const productSchema = yup.object({
         .string()
         .trim()
         .optional()
-        .default("")
+        .default(""),
+    colors: yup
+        .mixed()
+        .optional(),
+    sizes: yup
+        .mixed()
+        .optional()
 });
 
 // 5. Review Validation Schema
@@ -125,7 +131,15 @@ export const cartValidationSchema = yup.object({
         .number()
         .typeError("Quantity must be a number")
         .required("Quantity is required")
-        .default(1)
+        .default(1),
+    selectedColor: yup
+        .string()
+        .optional()
+        .default(""),
+    selectedSize: yup
+        .string()
+        .optional()
+        .default("")
 });
 
 // 7. Order Validation Schema
@@ -139,6 +153,14 @@ export const orderValidationSchema = yup.object({
         .min(1, "Quantity must be at least 1")
         .optional()
         .default(1),
+    selectedColor: yup
+        .string()
+        .optional()
+        .default(""),
+    selectedSize: yup
+        .string()
+        .optional()
+        .default(""),
     address: yup
         .string()
         .trim()

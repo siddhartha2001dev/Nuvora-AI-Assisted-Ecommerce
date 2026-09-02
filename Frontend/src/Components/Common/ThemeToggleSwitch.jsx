@@ -1,82 +1,48 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React from "react";
 import { useTheme } from "../../context/ThemeContext";
 import { HiOutlineSun, HiOutlineMoon } from "react-icons/hi";
 
+/**
+ * ThemeToggleSwitch Component
+ * ----------------------------
+ * A floating button for mobile devices that allows users
+ * to quickly switch between Dark Mode and Light Mode.
+ *
+ * For desktop screens (MD and above), the toggle is already
+ * present in the Navbar, so this component stays hidden on desktop.
+ */
 const ThemeToggleSwitch = () => {
+  // 1. Get current theme status and toggle function from ThemeContext
   const { isDarkMode, toggleTheme } = useTheme();
-  const [hideWithFooter, setHideWithFooter] = useState(false);
-  const location = useLocation();
-
-  // If on orders pages, always keep visible
-  const isOrdersPage = location.pathname.includes("orders");
-
-  useEffect(() => {
-    const handleScroll = () => {
-      // Only runs on mobile
-      if (window.innerWidth >= 768) return;
-
-      if (isOrdersPage) {
-        setHideWithFooter(false);
-        return;
-      }
-
-      const footer = document.getElementById("app-footer") || document.querySelector("footer");
-      if (footer) {
-        const rect = footer.getBoundingClientRect();
-        const isPageScrollable = document.documentElement.scrollHeight > window.innerHeight + 150;
-
-        // Hide only when user has actively scrolled deep into footer on long pages
-        if (isPageScrollable && rect.top <= window.innerHeight - 60 && window.scrollY > 80) {
-          setHideWithFooter(true);
-        } else {
-          setHideWithFooter(false);
-        }
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll, { passive: true });
-    handleScroll();
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-    };
-  }, [isOrdersPage, location.pathname]);
 
   return (
-    <div
-      className={`md:hidden fixed bottom-8 right-5 z-40 transition-all duration-300 ease-in-out ${
-        hideWithFooter
-          ? "opacity-0 translate-y-16 pointer-events-none scale-90"
-          : "opacity-100 translate-y-0 scale-100"
-      }`}
-    >
+    // Fixed container at the bottom-right corner for mobile view
+    <div className="md:hidden fixed bottom-6 right-5 z-40">
       <button
+        type="button"
         onClick={toggleTheme}
-        className="group relative flex items-center justify-between bg-[#121215]/95 hover:bg-[#18181c] border border-neutral-700/90 backdrop-blur-xl p-1.5 rounded-full shadow-2xl transition-all duration-300 w-20 h-10 cursor-pointer active:scale-95 hover:border-neutral-500"
-        title={isDarkMode ? "Switch to Day Mode (White Theme)" : "Switch to Night Mode (Black Theme)"}
-        aria-label="Toggle Theme Mode"
+        className="relative flex items-center justify-between w-16 h-9 p-1 bg-neutral-900 border border-neutral-700 rounded-full shadow-xl transition-all active:scale-95 cursor-pointer"
+        title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        aria-label="Toggle Dark and Light Mode"
       >
-        {/* Track Icons */}
-        <div className="w-full flex items-center justify-between px-2 text-xs">
-          <HiOutlineSun className={`transition-opacity duration-300 ${isDarkMode ? "opacity-40 text-neutral-400" : "opacity-0"}`} />
-          <HiOutlineMoon className={`transition-opacity duration-300 ${isDarkMode ? "opacity-0" : "opacity-40 text-neutral-400"}`} />
+        {/* Background Icons (Sun on Left, Moon on Right) */}
+        <div className="w-full flex items-center justify-between px-1.5 text-xs text-neutral-400">
+          <HiOutlineSun className="text-amber-400 text-sm" />
+          <HiOutlineMoon className="text-blue-300 text-sm" />
         </div>
 
-        {/* Sliding Indicator Knob */}
+        {/* Sliding Circular Knob */}
         <div
-          className={`absolute top-1 bottom-1 w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-300 ease-in-out shadow-md ${
+          className={`absolute top-1 w-7 h-7 rounded-full flex items-center justify-center transition-transform duration-300 shadow-md ${
             isDarkMode
-              ? "translate-x-9 bg-neutral-900 text-amber-300 border border-neutral-700"
-              : "translate-x-0 bg-white text-black border border-neutral-300"
+              ? "translate-x-7 bg-neutral-800 text-amber-300 border border-neutral-600"
+              : "translate-x-0 bg-white text-neutral-900"
           }`}
         >
           {isDarkMode ? (
-            <HiOutlineSun className="text-base" />
+            <HiOutlineSun className="text-xs" />
           ) : (
-            <HiOutlineMoon className="text-base text-neutral-900" />
+            <HiOutlineMoon className="text-xs" />
           )}
         </div>
       </button>

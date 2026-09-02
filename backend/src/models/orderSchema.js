@@ -15,6 +15,15 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         default: 1
     },
+    // Ordered variant attributes
+    selectedColor: {
+        type: String,
+        default: ""
+    },
+    selectedSize: {
+        type: String,
+        default: ""
+    },
     totalPrice: {
         type: Number,
         required: true

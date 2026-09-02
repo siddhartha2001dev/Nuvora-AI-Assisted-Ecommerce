@@ -2,6 +2,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { HiOutlineShieldCheck, HiOutlineTruck } from "react-icons/hi";
 
+/**
+ * OrderSummary Component
+ * ----------------------
+ * Displays price breakdown (Subtotal, Standard Delivery, Discount, Total),
+ * checkout call-to-action button, and trust security badges.
+ */
 const OrderSummary = ({
   subtotal = 0,
   shipping = 0,
@@ -10,30 +16,17 @@ const OrderSummary = ({
   buttonLink = "/checkout",
   onButtonClick,
 }) => {
+  // 1. Calculate final grand total (guarantee non-negative)
   const total = Math.max(0, subtotal + shipping - discount);
 
   return (
     <div className="bg-[#121215] border border-neutral-800/80 rounded-2xl p-6 space-y-6 h-fit">
+      {/* Card Header */}
       <h3 className="text-base font-bold uppercase tracking-wider text-white border-b border-neutral-800 pb-4">
         Order Summary
       </h3>
 
-      {/* Promo Code Input */}
-      <div className="flex space-x-2">
-        <input
-          type="text"
-          placeholder="Promo code (e.g. NUVORA10)"
-          className="w-full bg-neutral-900 text-xs text-white uppercase tracking-wider px-3.5 py-2.5 rounded-xl border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600 font-mono"
-        />
-        <button
-          type="button"
-          className="bg-neutral-800 text-neutral-200 text-xs font-semibold px-4 py-2.5 rounded-xl hover:bg-neutral-700 hover:text-white transition-colors shrink-0"
-        >
-          Apply
-        </button>
-      </div>
-
-      {/* Calculation Breakdown */}
+      {/* Price Calculation Breakdown */}
       <div className="space-y-3 text-sm text-neutral-400">
         <div className="flex justify-between">
           <span>Subtotal</span>
@@ -59,12 +52,12 @@ const OrderSummary = ({
         </div>
       </div>
 
-      {/* Primary CTA Button */}
+      {/* Primary Action Button */}
       {onButtonClick ? (
         <button
           type="button"
           onClick={onButtonClick}
-          className="w-full block text-center py-3.5 bg-white text-black text-xs uppercase font-extrabold tracking-widest rounded-xl hover:bg-neutral-200 transition-colors shadow-xl"
+          className="w-full block text-center py-3.5 bg-white text-black text-xs uppercase font-extrabold tracking-widest rounded-xl hover:bg-neutral-200 transition-colors shadow-xl cursor-pointer"
         >
           {buttonText}
         </button>
@@ -77,7 +70,7 @@ const OrderSummary = ({
         </Link>
       )}
 
-      {/* Trust Badges */}
+      {/* Security & Shipping Badges */}
       <div className="space-y-2 pt-2 text-[11px] text-neutral-500">
         <div className="flex items-center space-x-2">
           <HiOutlineShieldCheck className="text-neutral-400 text-base" />

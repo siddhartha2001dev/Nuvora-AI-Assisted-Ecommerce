@@ -15,6 +15,15 @@ const cartSchema = new mongoose.Schema({
         type: Number,
         default: 1,
         min: 1
+    },
+    // Selected variant attributes
+    selectedColor: {
+        type: String,
+        default: ""
+    },
+    selectedSize: {
+        type: String,
+        default: ""
     }
 }, { timestamps: true });
 

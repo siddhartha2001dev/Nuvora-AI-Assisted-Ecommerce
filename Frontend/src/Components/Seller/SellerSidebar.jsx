@@ -6,6 +6,12 @@ import {
   HiOutlineShoppingBag,
 } from "react-icons/hi";
 
+/**
+ * SellerSidebar Component
+ * -----------------------
+ * Fixed navigation sidebar displayed on desktop screens for Admin pages.
+ * Provides quick links to Dashboard & Products and Customer Orders.
+ */
 const SellerSidebar = () => {
   const location = useLocation();
 
@@ -23,19 +29,19 @@ const SellerSidebar = () => {
   ];
 
   return (
-    <aside className="w-full lg:w-64 bg-[#121215] border border-neutral-800/80 rounded-2xl p-5 space-y-6 h-fit shrink-0">
-      {/* Seller Store Header */}
+    <aside className="hidden lg:block lg:w-64 bg-[#121215] border border-neutral-800/80 rounded-2xl p-5 space-y-6 h-fit shrink-0">
+      {/* Admin Store Identity Header */}
       <div className="flex items-center space-x-3 pb-4 border-b border-neutral-800">
         <div className="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center font-bold font-['Syne',sans-serif]">
           <HiOutlineShoppingBag className="text-xl" />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-white">NUVORA Official</h3>
-          <p className="text-[11px] text-neutral-500 font-mono">STORE OWNER PANEL</p>
+          <h3 className="text-sm font-bold text-white">NUVORA Store</h3>
+          <p className="text-[11px] text-neutral-500 font-mono">ADMIN CONTROL PANEL</p>
         </div>
       </div>
 
-      {/* Nav links */}
+      {/* Navigation Links */}
       <nav className="space-y-1.5">
         {links.map((item) => {
           const Icon = item.icon;

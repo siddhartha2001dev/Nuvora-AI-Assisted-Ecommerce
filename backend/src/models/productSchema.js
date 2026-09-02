@@ -33,6 +33,16 @@ const productSchema = new mongoose.Schema({
         type: [String],
         default: []
     },
+    // Optional available colors (e.g., ["Black", "White", "Navy"])
+    colors: {
+        type: [String],
+        default: []
+    },
+    // Optional available sizes (e.g., ["S", "M", "L", "XL", "XXL"])
+    sizes: {
+        type: [String],
+        default: []
+    },
     stock: {
         type: Number,
         required: true,

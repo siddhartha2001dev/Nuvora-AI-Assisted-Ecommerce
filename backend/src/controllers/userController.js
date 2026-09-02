@@ -93,6 +93,11 @@ export const logIn = async (req, res) => {
             const accessToken = jwt.sign({ _id: existingUser._id }, process.env.secretKey, { expiresIn: "7d" });
             const refreshToken = jwt.sign({ _id: existingUser._id }, process.env.secretKey, { expiresIn: "30d" });
 
+            // Automatically migrate old "Seller" role to "Admin"
+            if (existingUser.role === "Seller") {
+                existingUser.role = "Admin";
+            }
+
             existingUser.isLoggedIn = true;
             await existingUser.save();
 

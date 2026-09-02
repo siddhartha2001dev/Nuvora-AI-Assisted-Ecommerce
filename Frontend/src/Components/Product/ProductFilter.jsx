@@ -1,6 +1,9 @@
 import React from "react";
 import { HiOutlineAdjustments, HiOutlineTag } from "react-icons/hi";
 
+/**
+ * Available Product Categories in the store
+ */
 export const CATEGORIES = [
   "All",
   "Fashion & Brands",
@@ -9,6 +12,14 @@ export const CATEGORIES = [
   "Wearables",
 ];
 
+/**
+ * ProductFilter Component
+ * ----------------------
+ * A sidebar filter component for desktop screens:
+ * - Category selection buttons
+ * - Price slider filter (₹500 to ₹25,000)
+ * - Reset filter button
+ */
 const ProductFilter = ({
   priceRange = 25000,
   onPriceChange,
@@ -17,24 +28,27 @@ const ProductFilter = ({
   onReset,
 }) => {
   return (
-    <aside className="w-full lg:w-64 bg-[#121215] border border-neutral-800/80 rounded-2xl p-5 sm:p-6 space-y-6 h-fit">
-      {/* Header */}
+    <aside className="w-full lg:w-64 bg-[#121215] border border-neutral-800/80 rounded-2xl p-5 sm:p-6 space-y-6 h-fit shrink-0">
+      {/* Filter Header */}
       <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
         <div className="flex items-center space-x-2">
           <HiOutlineAdjustments className="text-lg text-white" />
-          <h3 className="text-xs sm:text-sm uppercase tracking-wider font-bold text-white">Filters</h3>
+          <h3 className="text-xs sm:text-sm uppercase tracking-wider font-bold text-white">
+            Filters
+          </h3>
         </div>
         {onReset && (
           <button
+            type="button"
             onClick={onReset}
-            className="text-xs text-neutral-500 hover:text-white transition-colors"
+            className="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer"
           >
             Reset
           </button>
         )}
       </div>
 
-      {/* Categories Filter */}
+      {/* Category Filter List */}
       <div className="space-y-3">
         <div className="flex items-center space-x-1.5 text-neutral-400">
           <HiOutlineTag className="text-sm" />
@@ -48,8 +62,9 @@ const ProductFilter = ({
             return (
               <button
                 key={cat}
+                type="button"
                 onClick={() => onCategoryChange && onCategoryChange(cat)}
-                className={`text-left px-3 py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-between ${
+                className={`text-left px-3 py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-between cursor-pointer ${
                   isSelected
                     ? "bg-white text-black font-bold shadow-sm"
                     : "text-neutral-400 hover:text-white hover:bg-neutral-900"
@@ -63,7 +78,7 @@ const ProductFilter = ({
         </div>
       </div>
 
-      {/* Price Range */}
+      {/* Max Price Range Slider */}
       <div className="space-y-3 pt-4 border-t border-neutral-800">
         <div className="flex items-center justify-between">
           <h4 className="text-xs uppercase tracking-widest font-semibold text-neutral-400 font-mono">

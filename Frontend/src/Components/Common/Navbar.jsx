@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  useGetCartQuery,
-  useGetWishlistQuery,
-  useLogoutMutation,
-} from "../../redux/apiSlice";
 import { logoutUser } from "../../redux/slices/authSlice";
+import { fetchCart } from "../../redux/slices/cartSlice";
+import { fetchWishlist } from "../../redux/slices/wishlistSlice";
 import { useTheme } from "../../context/ThemeContext";
 import toast from "react-hot-toast";
 import {
@@ -24,9 +21,21 @@ import {
   HiOutlineChevronDown,
   HiOutlineHome,
   HiOutlineChevronRight,
-  HiOutlineCollection,
 } from "react-icons/hi";
 
+/**
+ * Navbar Component
+ * ----------------
+ * Primary header navigation for NUVORA.
+ *
+ * Responsibilities:
+ * - Brand logo link (redirects Admin to Dashboard, Buyers to Home)
+ * - Navigation links for Desktop and responsive Mobile drawer
+ * - Search bar, Cart badge, and Wishlist badge for buyers
+ * - User Profile Dropdown with Logout action
+ * - Day / Night Theme Toggle Switch
+ * - Auto-hide on mobile when scrolling into footer
+ */
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -39,19 +48,21 @@ const Navbar = () => {
 
   const { isDarkMode, toggleTheme } = useTheme();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const { items: cartItems } = useSelector((state) => state.cart);
+  const { items: wishlistItems } = useSelector((state) => state.wishlist);
 
-  const isSeller = isAuthenticated && user?.role === "Seller";
+  const isAdmin = isAuthenticated && (user?.role === "Admin" || user?.role === "Seller");
 
-  const { data: cartData } = useGetCartQuery(undefined, {
-    skip: !isAuthenticated || isSeller,
-  });
-  const { data: wishlistData } = useGetWishlistQuery(undefined, {
-    skip: !isAuthenticated || isSeller,
-  });
-  const [logoutApi] = useLogoutMutation();
+  // Initial fetch for cart & wishlist when authenticated buyer
+  useEffect(() => {
+    if (isAuthenticated && !isAdmin) {
+      dispatch(fetchCart());
+      dispatch(fetchWishlist());
+    }
+  }, [dispatch, isAuthenticated, isAdmin]);
 
-  const cartCount = cartData?.data?.length || 0;
-  const wishlistCount = wishlistData?.data?.length || 0;
+  const cartCount = cartItems?.length || 0;
+  const wishlistCount = wishlistItems?.length || 0;
 
   // Close dropdowns on route change
   useEffect(() => {
@@ -100,12 +111,7 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await logoutApi().unwrap();
-    } catch {
-      // ignore
-    }
-    dispatch(logoutUser());
+    await dispatch(logoutUser());
     setUserDropdownOpen(false);
     setMobileMenuOpen(false);
     toast.success("Logged out successfully");
@@ -119,7 +125,7 @@ const Navbar = () => {
         .join("")
         .toUpperCase()
         .slice(0, 2)
-    : isSeller ? "SE" : "NV";
+    : isAdmin ? "AD" : "NV";
 
   return (
     <header
@@ -133,23 +139,23 @@ const Navbar = () => {
           {/* Brand Logo */}
           <div className="flex items-center space-x-8">
             <Link
-              to={isSeller ? "/seller/dashboard" : "/"}
+              to={isAdmin ? "/seller/dashboard" : "/"}
               className="group flex items-center space-x-2 py-1"
             >
               <span className="text-xl sm:text-2xl font-extrabold tracking-widest uppercase font-['Syne',sans-serif] text-white group-hover:text-neutral-300 transition-colors flex items-center">
                 NUVORA
                 <span className="w-1.5 h-1.5 rounded-full bg-white ml-1.5 inline-block animate-pulse"></span>
               </span>
-              {isSeller && (
+              {isAdmin && (
                 <span className="text-[9px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-md bg-amber-950/80 text-amber-300 border border-amber-800/80 hidden sm:inline-block">
-                  MERCHANT
+                  ADMIN
                 </span>
               )}
             </Link>
 
             {/* Desktop Navigation Links */}
-            {isSeller ? (
-              /* Seller-Only Desktop Nav Links */
+            {isAdmin ? (
+              /* Admin Desktop Nav Links */
               <nav className="hidden md:flex items-center space-x-7 text-xs uppercase tracking-wider font-semibold text-neutral-400">
                 <Link
                   to="/seller/dashboard"
@@ -200,7 +206,7 @@ const Navbar = () => {
           </div>
 
           {/* Search Bar (Desktop - Buyer Only) */}
-          {!isSeller && (
+          {!isAdmin && (
             <div className="hidden lg:flex items-center relative w-64 xl:w-80">
               <input
                 type="text"
@@ -232,7 +238,7 @@ const Navbar = () => {
             </button>
 
             {/* Buyer Only Icons: Wishlist & Cart */}
-            {!isSeller && (
+            {!isAdmin && (
               <>
                 <Link
                   to="/wishlist"
@@ -299,9 +305,9 @@ const Navbar = () => {
                   <div className="px-3 py-2.5 border-b border-neutral-800/80">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-bold text-white truncate">{user?.userName || "Member"}</p>
-                      {isSeller && (
+                      {isAdmin && (
                         <span className="text-[9px] uppercase font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">
-                          Seller
+                          Admin
                         </span>
                       )}
                     </div>
@@ -309,8 +315,8 @@ const Navbar = () => {
                   </div>
 
                   <div className="flex flex-col space-y-0.5 pt-1">
-                    {isSeller ? (
-                      /* Seller-Only Menu Links */
+                    {isAdmin ? (
+                      /* Admin Menu Links */
                       <>
                         <Link
                           to="/seller/dashboard"
@@ -318,7 +324,7 @@ const Navbar = () => {
                         >
                           <div className="flex items-center space-x-2.5">
                             <HiOutlineSparkles className="text-base text-amber-400" />
-                            <span>Dashboard</span>
+                            <span>Admin Dashboard</span>
                           </div>
                           <HiOutlineChevronRight className="text-neutral-600 text-xs" />
                         </Link>
@@ -340,7 +346,7 @@ const Navbar = () => {
                         >
                           <div className="flex items-center space-x-2.5">
                             <HiOutlineUser className="text-base text-neutral-400" />
-                            <span>Seller Profile</span>
+                            <span>Admin Profile</span>
                           </div>
                           <HiOutlineChevronRight className="text-neutral-600 text-xs" />
                         </Link>
@@ -393,7 +399,7 @@ const Navbar = () => {
               </Link>
             )}
 
-            {/* Mobile Menu Toggle Button with Rotation Animation */}
+            {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2.5 text-neutral-300 hover:text-white border border-neutral-800 bg-neutral-900 rounded-xl active:scale-90 transition-all duration-200"
@@ -416,7 +422,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Drawer with Silky Smooth Slide & Expand Animation */}
+      {/* Mobile Drawer */}
       <div
         className={`md:hidden border-t border-neutral-800 bg-[#09090b]/98 backdrop-blur-2xl px-6 transition-all duration-300 ease-in-out overflow-hidden ${
           mobileMenuOpen
@@ -426,8 +432,7 @@ const Navbar = () => {
       >
         {/* Vertical Menu List */}
         <nav className="flex flex-col divide-y divide-neutral-800/80 border-b border-neutral-800 text-sm uppercase tracking-wider font-semibold">
-          {isSeller ? (
-            /* Mobile Seller Navigation */
+          {isAdmin ? (
             <>
               <Link
                 to="/seller/dashboard"
@@ -435,7 +440,7 @@ const Navbar = () => {
               >
                 <div className="flex items-center space-x-3.5">
                   <HiOutlineSparkles className="text-xl text-amber-400" />
-                  <span>Dashboard Overview</span>
+                  <span>Admin Dashboard</span>
                 </div>
                 <HiOutlineChevronRight className="text-neutral-600 text-base" />
               </Link>
@@ -457,13 +462,12 @@ const Navbar = () => {
               >
                 <div className="flex items-center space-x-3.5">
                   <HiOutlineUser className="text-xl text-neutral-400" />
-                  <span>Seller Profile</span>
+                  <span>Admin Profile</span>
                 </div>
                 <HiOutlineChevronRight className="text-neutral-600 text-base" />
               </Link>
             </>
           ) : (
-            /* Mobile Buyer / Guest Navigation */
             <>
               <Link
                 to="/"

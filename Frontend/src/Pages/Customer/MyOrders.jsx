@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useGetMyOrdersQuery, useCancelOrderMutation } from "../../redux/apiSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchMyOrders, cancelOrder } from "../../redux/slices/orderSlice";
 import Loader from "../../Components/Common/Loader";
 import toast from "react-hot-toast";
 import {
@@ -45,23 +46,27 @@ const getStatusBadge = (status) => {
 };
 
 const MyOrders = () => {
-  const { data: ordersRes, isLoading } = useGetMyOrdersQuery();
-  const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation();
+  const dispatch = useDispatch();
+  const { myOrders: orders, loading: isLoading, actionLoading: isCancelling } = useSelector(
+    (state) => state.orders
+  );
 
-  const orders = ordersRes?.data || [];
+  useEffect(() => {
+    dispatch(fetchMyOrders());
+  }, [dispatch]);
 
   const handleCancelOrder = async (orderId) => {
     if (!window.confirm("Are you sure you want to cancel this order?")) return;
 
     try {
-      await cancelOrder(orderId).unwrap();
+      await dispatch(cancelOrder(orderId)).unwrap();
       toast.success("Order cancelled successfully");
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to cancel order");
+      toast.error(typeof err === "string" ? err : "Failed to cancel order");
     }
   };
 
-  if (isLoading) {
+  if (isLoading && orders.length === 0) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader text="Retrieving your orders..." />
@@ -101,10 +106,7 @@ const MyOrders = () => {
         <div className="space-y-4 sm:space-y-6">
           {orders.map((order) => {
             const product = order.productId || {};
-            const image =
-              product.images && product.images.length > 0
-                ? product.images[0]
-                : "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=800&auto=format&fit=crop";
+            const image = product?.images?.[0] || "";
 
             return (
               <div
@@ -163,6 +165,23 @@ const MyOrders = () => {
                       <h4 className="text-xs sm:text-sm font-semibold text-white break-words line-clamp-2">
                         {product.title || "Essential Piece"}
                       </h4>
+
+                      {/* Variant Tags */}
+                      {(order.selectedColor || order.selectedSize) && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                          {order.selectedColor && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-neutral-900 border border-neutral-700 text-neutral-300 font-mono">
+                              Color: <strong className="text-white">{order.selectedColor}</strong>
+                            </span>
+                          )}
+                          {order.selectedSize && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-neutral-900 border border-neutral-700 text-neutral-300 font-mono">
+                              Size: <strong className="text-white">{order.selectedSize}</strong>
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       <p className="text-xs text-neutral-400 font-mono">
                         Qty: {order.quantity} • Unit Price: ₹{((order.totalPrice || 0) / (order.quantity || 1)).toLocaleString()}
                       </p>

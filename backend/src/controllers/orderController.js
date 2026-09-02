@@ -5,7 +5,7 @@ import cartSchema from "../models/cartSchema.js";
 // 1. Place Order (Buyer)
 export const placeOrder = async (req, res) => {
     try {
-        const { productId, quantity = 1, address, paymentMethod = "COD" } = req.body;
+        const { productId, quantity = 1, address, paymentMethod = "COD", selectedColor = "", selectedSize = "", cartItemId } = req.body;
 
         if (!productId) {
             return res.status(400).json({
@@ -48,6 +48,8 @@ export const placeOrder = async (req, res) => {
             buyerId: req.userId,
             productId,
             quantity: qty,
+            selectedColor: selectedColor || "",
+            selectedSize: selectedSize || "",
             totalPrice,
             address,
             paymentMethod,
@@ -60,10 +62,16 @@ export const placeOrder = async (req, res) => {
         await product.save();
 
         // Remove item from cart if it was in user's cart
-        await cartSchema.findOneAndDelete({
-            userId: req.userId,
-            productId
-        });
+        if (cartItemId) {
+            await cartSchema.findByIdAndDelete(cartItemId);
+        } else {
+            await cartSchema.findOneAndDelete({
+                userId: req.userId,
+                productId,
+                selectedColor: selectedColor || "",
+                selectedSize: selectedSize || ""
+            });
+        }
 
         const populatedOrder = await orderSchema.findById(order._id)
             .populate("productId")

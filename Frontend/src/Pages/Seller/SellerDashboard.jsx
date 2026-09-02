@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import {
-  useGetSellerProductsQuery,
-  useDeleteProductMutation,
-  useUpdateProductMutation,
-  useGetSellerOrdersQuery,
-} from "../../redux/apiSlice";
+  fetchSellerProducts,
+  deleteProduct,
+  updateProduct,
+} from "../../redux/slices/productSlice";
+import { fetchSellerOrders } from "../../redux/slices/orderSlice";
 import SellerSidebar from "../../Components/Seller/SellerSidebar";
 import Loader from "../../Components/Common/Loader";
 import toast from "react-hot-toast";
@@ -30,10 +31,15 @@ const CATEGORIES = [
 ];
 
 const SellerDashboard = () => {
-  const { data: productsRes, isLoading: isProductsLoading } = useGetSellerProductsQuery();
-  const { data: ordersRes } = useGetSellerOrdersQuery();
-  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
-  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+  const dispatch = useDispatch();
+
+  const { sellerProducts: products, loading: isProductsLoading } = useSelector(
+    (state) => state.products
+  );
+  const { sellerOrders: orders } = useSelector((state) => state.orders);
+
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Stock Refill Modal State
   const [refillModalProduct, setRefillModalProduct] = useState(null);
@@ -52,8 +58,10 @@ const SellerDashboard = () => {
     description: "",
   });
 
-  const products = productsRes?.data || [];
-  const orders = ordersRes?.data || [];
+  useEffect(() => {
+    dispatch(fetchSellerProducts());
+    dispatch(fetchSellerOrders());
+  }, [dispatch]);
 
   const totalRevenue = orders.reduce((acc, o) => acc + (o.totalPrice || 0), 0);
   const lowStockCount = products.filter((p) => (p.stock || 0) <= 3).length;
@@ -62,11 +70,14 @@ const SellerDashboard = () => {
   const handleDelete = async (productId, title) => {
     if (!window.confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) return;
 
+    setIsDeleting(true);
     try {
-      await deleteProduct(productId).unwrap();
+      await dispatch(deleteProduct(productId)).unwrap();
       toast.success(`"${title}" deleted successfully`);
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to delete product");
+      toast.error(typeof err === "string" ? err : "Failed to delete product");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -94,24 +105,30 @@ const SellerDashboard = () => {
       return;
     }
 
+    setIsUpdating(true);
     try {
-      await updateProduct({
-        id: editModalProduct._id,
-        formData: {
-          title: editFormData.title.trim(),
-          brand: editFormData.brand.trim() || "Nuvora",
-          category: editFormData.category,
-          price: Number(editFormData.price),
-          discountPrice: editFormData.discountPrice ? Number(editFormData.discountPrice) : 0,
-          stock: Math.max(0, Number(editFormData.stock)),
-          description: editFormData.description.trim(),
-        },
-      }).unwrap();
+      await dispatch(
+        updateProduct({
+          id: editModalProduct._id,
+          formData: {
+            title: editFormData.title.trim(),
+            brand: editFormData.brand.trim() || "Nuvora",
+            category: editFormData.category,
+            price: Number(editFormData.price),
+            discountPrice: editFormData.discountPrice ? Number(editFormData.discountPrice) : 0,
+            stock: Math.max(0, Number(editFormData.stock)),
+            description: editFormData.description.trim(),
+          },
+        })
+      ).unwrap();
 
+      dispatch(fetchSellerProducts());
       toast.success(`"${editFormData.title}" updated successfully!`);
       setEditModalProduct(null);
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to update product details");
+      toast.error(typeof err === "string" ? err : "Failed to update product details");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -137,23 +154,29 @@ const SellerDashboard = () => {
       return;
     }
 
+    setIsUpdating(true);
     try {
-      await updateProduct({
-        id: refillModalProduct._id,
-        formData: { stock: finalStock },
-      }).unwrap();
+      await dispatch(
+        updateProduct({
+          id: refillModalProduct._id,
+          formData: { stock: finalStock },
+        })
+      ).unwrap();
 
+      dispatch(fetchSellerProducts());
       toast.success(`Stock for "${refillModalProduct.title}" updated to ${finalStock} units!`);
       setRefillModalProduct(null);
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to update stock");
+      toast.error(typeof err === "string" ? err : "Failed to update stock");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  if (isProductsLoading) {
+  if (isProductsLoading && products.length === 0) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader text="Loading merchant dashboard..." />
+        <Loader text="Loading admin dashboard..." />
       </div>
     );
   }
@@ -170,7 +193,7 @@ const SellerDashboard = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-800 pb-6">
             <div>
               <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-neutral-500">
-                MERCHANT CONTROL PANEL
+                ADMIN CONTROL PANEL
               </span>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-['Syne',sans-serif]">
                 Dashboard Overview
@@ -186,8 +209,9 @@ const SellerDashboard = () => {
             </Link>
           </div>
 
-          {/* Metric Stats Cards */}
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+          {/* Metric Stats Cards (Clean 3-Card Summary) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            {/* Total Revenue */}
             <div className="p-4 sm:p-5 bg-[#121215] border border-neutral-800/80 rounded-2xl space-y-1.5 sm:space-y-2">
               <div className="flex items-center justify-between text-neutral-400">
                 <span className="text-[10px] sm:text-xs uppercase tracking-wider font-semibold">Total Revenue</span>
@@ -199,6 +223,7 @@ const SellerDashboard = () => {
               <span className="text-[9px] sm:text-[10px] text-emerald-400 font-mono">from all orders</span>
             </div>
 
+            {/* Orders Received */}
             <div className="p-4 sm:p-5 bg-[#121215] border border-neutral-800/80 rounded-2xl space-y-1.5 sm:space-y-2">
               <div className="flex items-center justify-between text-neutral-400">
                 <span className="text-[10px] sm:text-xs uppercase tracking-wider font-semibold">Orders Received</span>
@@ -206,10 +231,11 @@ const SellerDashboard = () => {
               </div>
               <p className="text-lg sm:text-2xl font-extrabold text-white font-mono">{orders.length}</p>
               <span className="text-[9px] sm:text-[10px] text-neutral-400 font-mono">
-                {orders.filter((o) => o.orderStatus === "Placed").length} pending
+                {orders.filter((o) => o.orderStatus === "Placed").length} pending delivery
               </span>
             </div>
 
+            {/* Active Listings */}
             <div className="p-4 sm:p-5 bg-[#121215] border border-neutral-800/80 rounded-2xl space-y-1.5 sm:space-y-2">
               <div className="flex items-center justify-between text-neutral-400">
                 <span className="text-[10px] sm:text-xs uppercase tracking-wider font-semibold">Active Listings</span>
@@ -217,17 +243,8 @@ const SellerDashboard = () => {
               </div>
               <p className="text-lg sm:text-2xl font-extrabold text-white font-mono">{products.length}</p>
               <span className="text-[9px] sm:text-[10px] text-neutral-400 font-mono">
-                {lowStockCount} low stock
+                {lowStockCount > 0 ? `${lowStockCount} low stock` : "All in stock"}
               </span>
-            </div>
-
-            <div className="p-4 sm:p-5 bg-[#121215] border border-neutral-800/80 rounded-2xl space-y-1.5 sm:space-y-2">
-              <div className="flex items-center justify-between text-neutral-400">
-                <span className="text-[10px] sm:text-xs uppercase tracking-wider font-semibold">Merchant Score</span>
-                <HiOutlineStar className="text-lg sm:text-xl text-amber-400" />
-              </div>
-              <p className="text-lg sm:text-2xl font-extrabold text-white font-mono">5.0 / 5</p>
-              <span className="text-[9px] sm:text-[10px] text-emerald-400 font-mono">Top Tier</span>
             </div>
           </div>
 
@@ -267,10 +284,7 @@ const SellerDashboard = () => {
                   </thead>
                   <tbody className="divide-y divide-neutral-800/60 text-neutral-300">
                     {products.map((p) => {
-                      const image =
-                        p.images && p.images.length > 0
-                          ? p.images[0]
-                          : "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=800&auto=format&fit=crop";
+                      const image = p?.images?.[0] || "";
 
                       const stock = p.stock || 0;
 
@@ -537,10 +551,7 @@ const SellerDashboard = () => {
             {/* Target Product Summary */}
             <div className="flex items-center space-x-3.5 p-3 rounded-2xl bg-neutral-900/80 border border-neutral-800">
               <img
-                src={
-                  refillModalProduct.images?.[0] ||
-                  "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=800&auto=format&fit=crop"
-                }
+                src={refillModalProduct.images?.[0] || ""}
                 alt={refillModalProduct.title}
                 className="w-12 h-14 object-cover rounded-xl bg-neutral-950 border border-neutral-800 shrink-0"
               />

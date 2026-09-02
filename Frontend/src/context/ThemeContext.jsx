@@ -24,12 +24,12 @@ export const ThemeProvider = ({ children }) => {
       root.style.filter = "invert(1) hue-rotate(180deg)";
       root.style.backgroundColor = "#f6f6f4";
 
-      // Re-invert all images & media so they remain in 100% true natural colors
+      // Protect images, videos, canvas, and footer so they stay in true natural colors
       if (!dynamicStyle) {
         dynamicStyle = document.createElement("style");
         dynamicStyle.id = styleId;
         dynamicStyle.innerHTML = `
-          img, video, picture, canvas, [data-no-invert], .no-invert, #app-footer {
+          img, video, picture, canvas.no-invert, [data-no-invert], .no-invert, #app-footer {
             filter: invert(1) hue-rotate(180deg) !important;
           }
         `;

@@ -1,6 +1,19 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+/**
+ * Footer Component
+ * ----------------
+ * Global dark footer for NUVORA.
+ *
+ * Characteristics:
+ * - Remains sleek dark across both Dark & Light themes (has .no-invert and #app-footer)
+ * - Brand story & establishment year (2026)
+ * - Explore catalog links
+ * - Customer Hub (Orders, Wishlist, Bag, Admin Portal)
+ * - Newsletter subscription box
+ * - Legal policies & copyright notice
+ */
 const Footer = () => {
   return (
     <footer
@@ -10,9 +23,12 @@ const Footer = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Brand Col */}
+          {/* Brand Info Column */}
           <div className="space-y-4 md:col-span-1">
-            <Link to="/" className="text-2xl font-extrabold tracking-widest uppercase font-['Syne',sans-serif] text-white">
+            <Link
+              to="/"
+              className="text-2xl font-extrabold tracking-widest uppercase font-['Syne',sans-serif] text-white"
+            >
               NUVORA<span className="text-neutral-500">.</span>
             </Link>
             <p className="text-sm text-neutral-400 leading-relaxed">
@@ -25,7 +41,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick Explore Links */}
           <div>
             <h4 className="text-xs uppercase tracking-widest font-semibold text-white mb-4">
               Explore
@@ -37,24 +53,24 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/shop?category=Apparel" className="hover:text-white transition-colors">
-                  Minimal Apparel
+                <Link to="/shop?category=Fashion %26 Brands" className="hover:text-white transition-colors">
+                  Fashion & Brands
                 </Link>
               </li>
               <li>
-                <Link to="/shop?category=Accessories" className="hover:text-white transition-colors">
-                  Modern Accessories
+                <Link to="/shop?category=Tech %26 Accessories" className="hover:text-white transition-colors">
+                  Tech & Accessories
                 </Link>
               </li>
               <li>
-                <Link to="/shop?category=Tech" className="hover:text-white transition-colors">
-                  Workspace & Tech
+                <Link to="/shop?category=Wearables" className="hover:text-white transition-colors">
+                  Wearables
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Customer Care */}
+          {/* Customer Hub Links */}
           <div>
             <h4 className="text-xs uppercase tracking-widest font-semibold text-white mb-4">
               Customer Hub
@@ -77,13 +93,13 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/seller/dashboard" className="hover:text-white transition-colors">
-                  Seller Portal
+                  Admin Portal
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* Newsletter Subscription Column */}
           <div className="space-y-4">
             <h4 className="text-xs uppercase tracking-widest font-semibold text-white mb-4">
               Stay In The Loop
@@ -97,14 +113,17 @@ const Footer = () => {
                 placeholder="Enter email address"
                 className="w-full bg-neutral-900 text-sm text-white px-3.5 py-2.5 rounded-lg border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
               />
-              <button className="bg-white text-black text-xs uppercase tracking-wider font-bold px-4 py-2.5 rounded-lg hover:bg-neutral-200 transition-colors shrink-0">
+              <button
+                type="button"
+                className="bg-white text-black text-xs uppercase tracking-wider font-bold px-4 py-2.5 rounded-lg hover:bg-neutral-200 transition-colors shrink-0 cursor-pointer"
+              >
                 Join
               </button>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Bottom Bar: Copyright & Policies */}
         <div className="mt-14 pt-8 border-t border-neutral-900 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-400 space-y-4 sm:space-y-0">
           <p>© {new Date().getFullYear()} NUVORA Studio. All rights reserved.</p>
           <div className="flex space-x-6">

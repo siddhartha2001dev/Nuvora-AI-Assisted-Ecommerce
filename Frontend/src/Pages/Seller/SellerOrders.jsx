@@ -1,5 +1,9 @@
-import React from "react";
-import { useGetSellerOrdersQuery, useUpdateOrderStatusMutation } from "../../redux/apiSlice";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchSellerOrders,
+  updateOrderStatus,
+} from "../../redux/slices/orderSlice";
 import SellerSidebar from "../../Components/Seller/SellerSidebar";
 import Loader from "../../Components/Common/Loader";
 import toast from "react-hot-toast";
@@ -7,26 +11,28 @@ import {
   HiOutlineShoppingBag,
   HiOutlineLocationMarker,
   HiOutlineUser,
-  HiOutlineMail,
-  HiOutlinePhone,
 } from "react-icons/hi";
 
 const SellerOrders = () => {
-  const { data: ordersRes, isLoading } = useGetSellerOrdersQuery();
-  const [updateOrderStatus, { isLoading: isUpdating }] = useUpdateOrderStatusMutation();
+  const dispatch = useDispatch();
+  const { sellerOrders: orders, loading: isLoading, actionLoading: isUpdating } = useSelector(
+    (state) => state.orders
+  );
 
-  const orders = ordersRes?.data || [];
+  useEffect(() => {
+    dispatch(fetchSellerOrders());
+  }, [dispatch]);
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await updateOrderStatus({ id: orderId, status: newStatus }).unwrap();
+      await dispatch(updateOrderStatus({ id: orderId, status: newStatus })).unwrap();
       toast.success(`Order status updated to "${newStatus}"`);
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to update order status");
+      toast.error(typeof err === "string" ? err : "Failed to update order status");
     }
   };
 
-  if (isLoading) {
+  if (isLoading && orders.length === 0) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader text="Loading customer orders..." />
@@ -112,6 +118,23 @@ const SellerOrders = () => {
                         <h4 className="text-sm font-semibold text-white break-words line-clamp-2">
                           {product.title || "Essential Piece"}
                         </h4>
+
+                        {/* Variant Badges */}
+                        {(order.selectedColor || order.selectedSize) && (
+                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                            {order.selectedColor && (
+                              <span className="text-[10px] px-2 py-0.5 rounded-md bg-neutral-900 border border-neutral-700 text-neutral-300 font-mono">
+                                Color: <strong className="text-white">{order.selectedColor}</strong>
+                              </span>
+                            )}
+                            {order.selectedSize && (
+                              <span className="text-[10px] px-2 py-0.5 rounded-md bg-neutral-900 border border-neutral-700 text-neutral-300 font-mono">
+                                Size: <strong className="text-white">{order.selectedSize}</strong>
+                              </span>
+                            )}
+                          </div>
+                        )}
+
                         <p className="font-mono text-neutral-400">
                           Quantity: <strong className="text-white">{order.quantity} pcs</strong> • Total:{" "}
                           <strong className="text-white font-mono">₹{order.totalPrice?.toLocaleString()}</strong> (

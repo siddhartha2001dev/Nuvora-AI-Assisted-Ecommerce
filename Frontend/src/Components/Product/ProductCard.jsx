@@ -1,15 +1,24 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart } from "../../redux/slices/cartSlice";
 import {
-  useAddToCartMutation,
-  useAddToWishlistMutation,
-  useRemoveFromWishlistMutation,
-  useGetWishlistQuery,
-} from "../../redux/apiSlice";
+  addToWishlist,
+  removeFromWishlist,
+  fetchWishlist,
+} from "../../redux/slices/wishlistSlice";
 import toast from "react-hot-toast";
 import { HiOutlineHeart, HiHeart, HiOutlineShoppingBag, HiStar } from "react-icons/hi";
 
+/**
+ * ProductCard Component
+ * --------------------
+ * Renders a product grid card with:
+ * - Product image, category, rating, title, and pricing (with sale badges)
+ * - Quick Add to Bag button
+ * - Wishlist toggle button (Heart)
+ * - Navigation link to full Product Details
+ */
 const ProductCard = ({ product }) => {
   const {
     _id,
@@ -23,28 +32,32 @@ const ProductCard = ({ product }) => {
     stock = 1,
   } = product || {};
 
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [addToCart, { isLoading: isAddingCart }] = useAddToCartMutation();
-  const [addToWishlist] = useAddToWishlistMutation();
-  const [removeFromWishlist] = useRemoveFromWishlistMutation();
+  // 1. Read authentication and cart/wishlist state from Redux
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { actionLoading: isAddingCart } = useSelector((state) => state.cart);
+  const { items: wishlistItems } = useSelector((state) => state.wishlist);
 
-  const { data: wishlistData } = useGetWishlistQuery(undefined, {
-    skip: !isAuthenticated,
-  });
+  // 2. Fetch wishlist on load if user is logged in
+  useEffect(() => {
+    if (isAuthenticated && wishlistItems.length === 0) {
+      dispatch(fetchWishlist());
+    }
+  }, [dispatch, isAuthenticated, wishlistItems.length]);
 
-  const isWishlisted = wishlistData?.data?.some(
+  // 3. Check if this product is currently in the buyer's wishlist
+  const isWishlisted = wishlistItems?.some(
     (item) => item.productId?._id === _id || item.productId === _id
   );
 
-  const displayImage =
-    images && images.length > 0
-      ? images[0]
-      : "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=800&auto=format&fit=crop";
+  // 4. Product Display Image
+  const displayImage = images?.[0] || "";
 
   const hasDiscount = discountPrice && discountPrice > 0 && discountPrice < price;
 
+  // 5. Quick Add to Shopping Bag handler
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -56,13 +69,14 @@ const ProductCard = ({ product }) => {
     }
 
     try {
-      await addToCart({ productId: _id, quantity: 1 }).unwrap();
+      await dispatch(addToCart({ productId: _id, quantity: 1 })).unwrap();
       toast.success("Added to Shopping Bag!");
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to add to bag");
+      toast.error(typeof err === "string" ? err : "Failed to add to bag");
     }
   };
 
+  // 6. Wishlist toggle (Add / Remove)
   const handleToggleWishlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -75,20 +89,20 @@ const ProductCard = ({ product }) => {
 
     try {
       if (isWishlisted) {
-        await removeFromWishlist(_id).unwrap();
+        await dispatch(removeFromWishlist(_id)).unwrap();
         toast.success("Removed from wishlist");
       } else {
-        await addToWishlist({ productId: _id }).unwrap();
+        await dispatch(addToWishlist({ productId: _id })).unwrap();
         toast.success("Saved to wishlist!");
       }
     } catch (err) {
-      toast.error(err?.data?.message || "Wishlist action failed");
+      toast.error(typeof err === "string" ? err : "Wishlist action failed");
     }
   };
 
   return (
     <div className="group relative bg-[#121215] border border-neutral-800/80 hover:border-neutral-700 rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300">
-      {/* Image Box */}
+      {/* Product Image Area */}
       <div className="relative aspect-[4/5] sm:aspect-[3/4] bg-neutral-950 overflow-hidden">
         <Link to={`/product/${_id}`}>
           <img
@@ -99,13 +113,13 @@ const ProductCard = ({ product }) => {
           />
         </Link>
 
-        {/* Specular Liquid Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b]/80 via-transparent to-black/20 pointer-events-none"></div>
+        {/* Ambient Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b]/80 via-transparent to-black/20 pointer-events-none" />
 
-        {/* Badges */}
+        {/* Stock & Sale Badges */}
         <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex flex-col gap-1.5 z-10">
           {hasDiscount && (
-            <span className="bg-white text-black text-[9px] sm:text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded-full shadow-lg backdrop-blur-md">
+            <span className="bg-white text-black text-[9px] sm:text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded-full shadow-lg">
               Sale
             </span>
           )}
@@ -123,8 +137,9 @@ const ProductCard = ({ product }) => {
 
         {/* Wishlist Button */}
         <button
+          type="button"
           onClick={handleToggleWishlist}
-          className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 p-2 sm:p-2.5 rounded-full bg-black/60 backdrop-blur-md border border-neutral-700 text-white hover:bg-white hover:text-black transition-all shadow-md z-10"
+          className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 p-2 sm:p-2.5 rounded-full bg-black/60 backdrop-blur-md border border-neutral-700 text-white hover:bg-white hover:text-black transition-all shadow-md z-10 cursor-pointer"
           title={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
         >
           {isWishlisted ? (
@@ -134,13 +149,14 @@ const ProductCard = ({ product }) => {
           )}
         </button>
 
-        {/* Quick Add Overlay on Hover (Desktop) */}
+        {/* Quick Add Button on Hover (Desktop View) */}
         {stock > 0 && (
           <div className="absolute bottom-3 inset-x-3 hidden sm:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
             <button
+              type="button"
               onClick={handleAddToCart}
               disabled={isAddingCart}
-              className="w-full py-2.5 bg-white text-black text-[11px] uppercase font-extrabold tracking-widest rounded-xl hover:bg-neutral-200 transition-all shadow-[0_4px_20px_rgba(255,255,255,0.25)] flex items-center justify-center space-x-2 disabled:opacity-60"
+              className="w-full py-2.5 bg-white text-black text-[11px] uppercase font-extrabold tracking-widest rounded-xl hover:bg-neutral-200 transition-all shadow-lg flex items-center justify-center space-x-2 disabled:opacity-60 cursor-pointer"
             >
               <HiOutlineShoppingBag className="text-base" />
               <span>{isAddingCart ? "Adding..." : "Quick Bag"}</span>
@@ -149,11 +165,14 @@ const ProductCard = ({ product }) => {
         )}
       </div>
 
-      {/* Content */}
+      {/* Product Content Details */}
       <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
         <div>
+          {/* Category & Star Rating */}
           <div className="flex items-center justify-between text-[11px] text-neutral-400 mb-1">
-            <span className="uppercase tracking-widest font-mono text-[10px]">{category}</span>
+            <span className="uppercase tracking-widest font-mono text-[10px]">
+              {category}
+            </span>
             <div className="flex items-center text-neutral-300 font-semibold space-x-1">
               <HiStar className="text-amber-400 text-xs sm:text-sm" />
               <span>{rating || 5}</span>
@@ -161,6 +180,7 @@ const ProductCard = ({ product }) => {
             </div>
           </div>
 
+          {/* Product Title */}
           <Link to={`/product/${_id}`}>
             <h3 className="text-xs sm:text-sm font-semibold text-neutral-200 group-hover:text-white transition-colors line-clamp-1">
               {title}
@@ -168,7 +188,7 @@ const ProductCard = ({ product }) => {
           </Link>
         </div>
 
-        {/* Price & Mobile Add to Bag */}
+        {/* Price & Mobile Quick Add Button */}
         <div className="mt-3 pt-2.5 border-t border-neutral-800/60 flex items-center justify-between">
           <div className="flex items-baseline space-x-1.5 sm:space-x-2">
             <span className="text-sm sm:text-base font-extrabold text-white font-mono">
@@ -181,9 +201,10 @@ const ProductCard = ({ product }) => {
             )}
           </div>
 
-          {/* Mobile Quick Add Icon */}
+          {/* Mobile Quick Add Button */}
           {stock > 0 && (
             <button
+              type="button"
               onClick={handleAddToCart}
               disabled={isAddingCart}
               className="sm:hidden p-1.5 rounded-lg border border-neutral-800 bg-neutral-900 text-white active:scale-95 transition-transform"

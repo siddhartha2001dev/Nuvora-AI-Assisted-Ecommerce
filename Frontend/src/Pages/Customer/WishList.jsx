@@ -1,15 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useGetWishlistQuery } from "../../redux/apiSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchWishlist } from "../../redux/slices/wishlistSlice";
 import ProductCard from "../../Components/Product/ProductCard";
 import Loader from "../../Components/Common/Loader";
 import { HiOutlineHeart, HiOutlineArrowLeft } from "react-icons/hi";
 
 const WishList = () => {
-  const { data: wishlistRes, isLoading } = useGetWishlistQuery();
-  const wishlistItems = wishlistRes?.data || [];
+  const dispatch = useDispatch();
+  const { items: wishlistItems, loading: isLoading } = useSelector(
+    (state) => state.wishlist
+  );
 
-  if (isLoading) {
+  useEffect(() => {
+    dispatch(fetchWishlist());
+  }, [dispatch]);
+
+  if (isLoading && wishlistItems.length === 0) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader text="Loading your saved pieces..." />

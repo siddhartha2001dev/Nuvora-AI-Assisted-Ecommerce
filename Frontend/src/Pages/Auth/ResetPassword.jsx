@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useResetPasswordMutation } from "../../redux/apiSlice";
+import { useDispatch } from "react-redux";
+import { resetPassword } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
 import { HiOutlineLockClosed, HiOutlineKey, HiOutlineCheckCircle } from "react-icons/hi";
 
@@ -11,8 +12,9 @@ const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [resetPasswordApi, { isLoading }] = useResetPasswordMutation();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -38,15 +40,18 @@ const ResetPassword = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
-      const res = await resetPasswordApi({ token, newPassword }).unwrap();
+      const res = await dispatch(resetPassword({ token, newPassword })).unwrap();
       toast.success(res?.message || "Password reset successfully!");
       setIsSuccess(true);
       setTimeout(() => {
         navigate("/login");
       }, 2500);
     } catch (err) {
-      toast.error(err?.data?.message || "Reset link has expired or is invalid");
+      toast.error(typeof err === "string" ? err : "Reset link has expired or is invalid");
+    } finally {
+      setIsLoading(false);
     }
   };
 

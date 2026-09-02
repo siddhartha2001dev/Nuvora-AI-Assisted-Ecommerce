@@ -10,7 +10,7 @@ import {
     summarizeProductWithAI
 } from "../controllers/productController.js";
 import { hashToken } from "../middlewares/hashToken.js";
-import { isSeller } from "../middlewares/isSeller.js";
+import { isAdmin } from "../middlewares/isAdmin.js";
 import { upload } from "../middlewares/multer.js";
 import { validate, productSchema } from "../validator/validator.js";
 
@@ -22,11 +22,10 @@ productRouter.get("/paginate", paginateProducts);
 productRouter.get("/:id/ai-summary", summarizeProductWithAI);
 productRouter.get("/:id", getProductById);
 
-
-// Seller Protected Routes (Requires Login Token + Seller Role)
-productRouter.post("/create", hashToken, isSeller, upload.array("images", 5), validate(productSchema), createProduct);
-productRouter.get("/seller/my-products", hashToken, isSeller, getSellerProducts);
-productRouter.put("/update/:id", hashToken, isSeller, upload.array("images", 5), updateProduct);
-productRouter.delete("/delete/:id", hashToken, isSeller, deleteProduct);
+// Admin Protected Routes (Requires Login Token + Admin Role)
+productRouter.post("/create", hashToken, isAdmin, upload.array("images", 5), validate(productSchema), createProduct);
+productRouter.get("/seller/my-products", hashToken, isAdmin, getSellerProducts);
+productRouter.put("/update/:id", hashToken, isAdmin, upload.array("images", 5), updateProduct);
+productRouter.delete("/delete/:id", hashToken, isAdmin, deleteProduct);
 
 export default productRouter;

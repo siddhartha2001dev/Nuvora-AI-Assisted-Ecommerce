@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
-  useGetProductDetailsQuery,
-  useGetProductReviewsQuery,
-  useAddToCartMutation,
-  useAddToWishlistMutation,
-  useRemoveFromWishlistMutation,
-  useGetWishlistQuery,
-  useLazyGetProductAiSummaryQuery,
-} from "../../redux/apiSlice";
+  fetchProductDetails,
+  fetchProductAiSummary,
+} from "../../redux/slices/productSlice";
+import { fetchProductReviews } from "../../redux/slices/reviewSlice";
+import { addToCart } from "../../redux/slices/cartSlice";
+import {
+  addToWishlist,
+  removeFromWishlist,
+  fetchWishlist,
+} from "../../redux/slices/wishlistSlice";
 import ReviewSection from "../../Components/Product/ReviewSection";
+import AiSummaryModal from "../../Components/Product/AiSummaryModal";
 import Loader from "../../Components/Common/Loader";
 import toast from "react-hot-toast";
 import {
@@ -29,16 +32,53 @@ import {
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const { isAuthenticated } = useSelector((state) => state.auth);
+  const {
+    productDetails: product,
+    detailsLoading: isLoading,
+    aiSummary: aiData,
+    aiLoading: isAiLoading,
+    error: productError,
+  } = useSelector((state) => state.products);
 
-  const { data: productRes, isLoading, isError } = useGetProductDetailsQuery(id);
-  const { data: reviewsRes } = useGetProductReviewsQuery(id, { skip: !id });
-
-  const product = productRes?.data;
-  const reviews = reviewsRes?.data || [];
+  const { reviews } = useSelector((state) => state.reviews);
+  const { actionLoading: isAddingCart } = useSelector((state) => state.cart);
+  const { items: wishlistItems } = useSelector((state) => state.wishlist);
 
   const [selectedImg, setSelectedImg] = useState(0);
   const [showAiModal, setShowAiModal] = useState(false);
+
+  // Variant selection states (Optional)
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
+
+  // Fetch product details and reviews on mount / id change
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchProductDetails(id));
+      dispatch(fetchProductReviews(id));
+      if (isAuthenticated) {
+        dispatch(fetchWishlist());
+      }
+    }
+  }, [dispatch, id, isAuthenticated]);
+
+  // Set default selected color and size when product loads
+  useEffect(() => {
+    if (product?.colors && product.colors.length > 0) {
+      setSelectedColor(product.colors[0]);
+    } else {
+      setSelectedColor("");
+    }
+
+    if (product?.sizes && product.sizes.length > 0) {
+      setSelectedSize(product.sizes[0]);
+    } else {
+      setSelectedSize("");
+    }
+  }, [product]);
 
   // Lock background scrolling when AI modal is open
   useEffect(() => {
@@ -52,23 +92,12 @@ const ProductDetails = () => {
     };
   }, [showAiModal]);
 
-  const [triggerAiSummary, { data: aiData, isFetching: isAiLoading }] =
-    useLazyGetProductAiSummaryQuery();
-
   const handleOpenAiModal = () => {
     setShowAiModal(true);
-    triggerAiSummary(id);
+    dispatch(fetchProductAiSummary(id));
   };
 
-  const [addToCart, { isLoading: isAddingCart }] = useAddToCartMutation();
-  const [addToWishlist] = useAddToWishlistMutation();
-  const [removeFromWishlist] = useRemoveFromWishlistMutation();
-
-  const { data: wishlistData } = useGetWishlistQuery(undefined, {
-    skip: !isAuthenticated,
-  });
-
-  const isWishlisted = wishlistData?.data?.some(
+  const isWishlisted = wishlistItems?.some(
     (item) => item.productId?._id === id || item.productId === id
   );
 
@@ -94,10 +123,17 @@ const ProductDetails = () => {
     }
 
     try {
-      await addToCart({ productId: id, quantity: 1 }).unwrap();
+      await dispatch(
+        addToCart({
+          productId: id,
+          quantity: 1,
+          selectedColor: selectedColor || "",
+          selectedSize: selectedSize || "",
+        })
+      ).unwrap();
       toast.success("Added to Shopping Bag!");
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to add to bag");
+      toast.error(typeof err === "string" ? err : "Failed to add to bag");
     }
   };
 
@@ -110,14 +146,14 @@ const ProductDetails = () => {
 
     try {
       if (isWishlisted) {
-        await removeFromWishlist(id).unwrap();
+        await dispatch(removeFromWishlist(id)).unwrap();
         toast.success("Removed from wishlist");
       } else {
-        await addToWishlist({ productId: id }).unwrap();
+        await dispatch(addToWishlist({ productId: id })).unwrap();
         toast.success("Saved to wishlist!");
       }
     } catch (err) {
-      toast.error(err?.data?.message || "Wishlist action failed");
+      toast.error(typeof err === "string" ? err : "Wishlist action failed");
     }
   };
 
@@ -129,7 +165,7 @@ const ProductDetails = () => {
     );
   }
 
-  if (isError || !product) {
+  if (productError || !product) {
     return (
       <div className="max-w-md mx-auto my-20 p-8 text-center bg-[#121215] border border-neutral-800 rounded-3xl space-y-4">
         <h2 className="text-xl font-bold text-white font-['Syne',sans-serif]">
@@ -149,9 +185,7 @@ const ProductDetails = () => {
     );
   }
 
-  const images = product.images && product.images.length > 0
-    ? product.images
-    : ["https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=800&auto=format&fit=crop"];
+  const images = product.images || [];
 
   const hasDiscount = product.discountPrice && product.discountPrice > 0 && product.discountPrice < product.price;
 
@@ -288,6 +322,68 @@ const ProductDetails = () => {
             <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed pt-1">
               {product.description}
             </p>
+
+            {/* Optional Available Colors Selector */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-neutral-800/80">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs uppercase tracking-wider font-semibold text-neutral-300">
+                    Select Color:
+                  </span>
+                  <span className="text-xs font-bold text-white font-mono">{selectedColor}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {product.colors.map((color) => {
+                    const isSelected = selectedColor === color;
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setSelectedColor(color)}
+                        className={`px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                          isSelected
+                            ? "bg-white text-black border-white shadow-md font-bold scale-105"
+                            : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600 hover:text-white"
+                        }`}
+                      >
+                        {color}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Optional Available Sizes Selector */}
+            {product.sizes && product.sizes.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-neutral-800/80">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs uppercase tracking-wider font-semibold text-neutral-300">
+                    Select Size:
+                  </span>
+                  <span className="text-xs font-bold text-white font-mono">{selectedSize}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.map((size) => {
+                    const isSelected = selectedSize === size;
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => setSelectedSize(size)}
+                        className={`w-12 h-10 rounded-xl text-xs font-mono font-bold border transition-all flex items-center justify-center ${
+                          isSelected
+                            ? "bg-white text-black border-white shadow-md scale-105"
+                            : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600 hover:text-white"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Actions & Wishlist */}
@@ -357,82 +453,13 @@ const ProductDetails = () => {
       {/* Verified Reviews Section */}
       <ReviewSection productId={id} />
 
-      {/* Glassmorphic AI Insights Modal (Rendered directly on Document Body for 100% Full Viewport Blur) */}
-      {showAiModal &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-[99999] w-screen h-screen flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-2xl animate-fadeIn"
-            onClick={() => setShowAiModal(false)}
-          >
-            <div
-              className="w-full max-w-lg bg-[#121215]/95 backdrop-blur-2xl border border-neutral-800 rounded-3xl p-5 sm:p-7 space-y-4 sm:space-y-5 shadow-2xl relative max-h-[85vh] flex flex-col text-left"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Modal Header */}
-              <div className="flex items-center justify-between border-b border-neutral-800 pb-3.5">
-                <div className="flex items-center space-x-2.5">
-                  <div className="p-2 rounded-xl bg-violet-950/60 border border-violet-800/60 text-violet-400 shrink-0">
-                    <HiOutlineSparkles className="text-lg text-amber-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-white font-['Syne',sans-serif]">
-                      NUVORA AI Insights
-                    </h3>
-                    <p className="text-[10px] sm:text-[11px] text-neutral-400">
-                      Live synthesis from database specs & reviews
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowAiModal(false)}
-                  className="p-2.5 text-neutral-400 hover:text-white rounded-xl hover:bg-neutral-800 transition-colors"
-                  title="Close"
-                >
-                  <HiOutlineX className="text-xl" />
-                </button>
-              </div>
-
-              {/* Modal Body */}
-              <div className="flex-1 overflow-y-auto pr-1">
-                {isAiLoading ? (
-                  <div className="py-12 text-center space-y-4">
-                    <div className="w-10 h-10 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold text-white animate-pulse">
-                        Analyzing specs & customer feedback with Gemini...
-                      </p>
-                      <p className="text-[11px] text-neutral-500">
-                        Generating tailored buying insights
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 rounded-2xl bg-neutral-900/90 border border-neutral-800/80 space-y-3">
-                    <div className="text-xs text-neutral-200 whitespace-pre-line leading-relaxed font-sans">
-                      {aiData?.data || "Unable to generate summary at the moment."}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Modal Footer */}
-              <div className="pt-3 border-t border-neutral-800 flex items-center justify-between">
-                <span className="text-[10px] text-neutral-500 font-mono">
-                  Google Gemini 3.6 Flash
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowAiModal(false)}
-                  className="px-5 py-2.5 bg-white text-black text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-neutral-200 transition-colors shadow-md"
-                >
-                  Close Insights
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+      {/* Reusable AI Summary Modal */}
+      <AiSummaryModal
+        isOpen={showAiModal}
+        onClose={() => setShowAiModal(false)}
+        isLoading={isAiLoading}
+        summaryData={aiData}
+      />
     </div>
   );
 };

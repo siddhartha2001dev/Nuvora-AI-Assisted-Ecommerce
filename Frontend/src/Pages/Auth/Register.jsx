@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useRegisterMutation } from "../../redux/apiSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { registerUser } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
 import {
   HiOutlineUser,
@@ -18,9 +19,11 @@ const Register = () => {
     address: "",
   });
 
-  const [registerUser, { isLoading }] = useRegisterMutation();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { loading: isLoading } = useSelector((state) => state.auth);
 
   // Explicitly clear fields on mount
   useEffect(() => {
@@ -58,12 +61,12 @@ const Register = () => {
         address: formData.address,
       };
 
-      const res = await registerUser(payload).unwrap();
+      const res = await dispatch(registerUser(payload)).unwrap();
 
       toast.success(res?.message || "Registered successfully! Please verify your email.");
       navigate(`/verify-email?email=${encodeURIComponent(formData.email)}&token=${res?.token || ""}`);
     } catch (err) {
-      toast.error(err?.data?.message || "Registration failed. Please try again.");
+      toast.error(typeof err === "string" ? err : "Registration failed. Please try again.");
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { useForgotPasswordMutation } from "../../redux/apiSlice";
+import { useDispatch } from "react-redux";
+import { forgotPassword } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
 import { HiOutlineMail, HiOutlineArrowLeft, HiOutlineCheckCircle } from "react-icons/hi";
 
@@ -8,8 +9,9 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [resetToken, setResetToken] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [forgotPasswordApi, { isLoading }] = useForgotPasswordMutation();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,15 +21,18 @@ const ForgotPassword = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
-      const res = await forgotPasswordApi({ email }).unwrap();
+      const res = await dispatch(forgotPassword({ email })).unwrap();
       toast.success(res?.message || "Reset link sent to your email!");
       setIsSubmitted(true);
       if (res?.resetToken) {
         setResetToken(res.resetToken);
       }
     } catch (err) {
-      toast.error(err?.data?.message || "No account found with this email");
+      toast.error(typeof err === "string" ? err : "No account found with this email");
+    } finally {
+      setIsLoading(false);
     }
   };
 

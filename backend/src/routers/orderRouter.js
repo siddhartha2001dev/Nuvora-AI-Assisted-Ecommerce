@@ -7,7 +7,7 @@ import {
     cancelOrder
 } from "../controllers/orderController.js";
 import { hashToken } from "../middlewares/hashToken.js";
-import { isSeller } from "../middlewares/isSeller.js";
+import { isAdmin } from "../middlewares/isAdmin.js";
 import { validate, orderValidationSchema } from "../validator/validator.js";
 
 const orderRouter = express.Router();
@@ -17,8 +17,8 @@ orderRouter.post("/place", hashToken, validate(orderValidationSchema), placeOrde
 orderRouter.get("/my-orders", hashToken, getMyOrders);
 orderRouter.put("/cancel/:id", hashToken, cancelOrder);
 
-// Seller Protected Routes
-orderRouter.get("/seller/orders", hashToken, isSeller, getSellerOrders);
-orderRouter.put("/seller/status/:id", hashToken, isSeller, updateOrderStatus);
+// Admin Protected Routes
+orderRouter.get("/seller/orders", hashToken, isAdmin, getSellerOrders);
+orderRouter.put("/seller/status/:id", hashToken, isAdmin, updateOrderStatus);
 
 export default orderRouter;

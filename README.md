@@ -3,67 +3,67 @@
 [![React](https://img.shields.io/badge/React-19-black?logo=react)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-6-purple?logo=vite)](https://vitejs.dev/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
-[![Redux Toolkit](https://img.shields.io/badge/Redux%20Toolkit-RTK%20Query-764abc?logo=redux)](https://redux-toolkit.js.org/)
+[![Redux Toolkit](https://img.shields.io/badge/Redux%20Toolkit-RTK-764abc?logo=redux)](https://redux-toolkit.js.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-Express-green?logo=node.js)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47a248?logo=mongodb)](https://www.mongodb.com/)
-[![Google Gemini](https://img.shields.io/badge/AI-Gemini%203.6%20Flash-blue?logo=google)](https://ai.google.dev/)
+[![Google Gemini](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-blue?logo=google)](https://ai.google.dev/)
 
-> **NUVORA** is a sleek, monochromatic Direct-to-Consumer (D2C) luxury e-commerce platform built on a clean **Single-Vendor, Multi-Buyer** architecture. Powered by React 19, Redux Toolkit Query, Node.js, Express, MongoDB Atlas, and the **Google Gemini 3.6 Flash AI** engine.
+> **NUVORA** is a sleek, monochromatic Direct-to-Consumer (D2C) luxury e-commerce platform built on a clean **Single-Vendor, Multi-Buyer** architecture. Powered by React 19, Redux Toolkit, Node.js, Express, MongoDB Atlas, Cloudinary CDN, and the **Google Gemini 1.5 Flash AI** engine.
 
 ---
 
 ## 🌟 Key Features
 
 ### 🤖 1. Google Gemini AI Product Insights Summarizer
-- **Native REST Integration**: Directly queries Google Gemini 3.6 Flash via Node.js native `fetch` with zero heavy dependencies.
-- **Real-Time Data Ingestion**: Synthesizes product specifications, pricing, stock, and authentic customer reviews stored in MongoDB.
-- **Full-Screen Glassmorphic Modal**: Rendered with React `createPortal` and `z-[99999] backdrop-blur-2xl` for 100% viewport coverage.
+- **Official Model (`gemini-1.5-flash`)**: High-speed, lightweight endpoint querying Google Generative Language API.
+- **Synthesized Product Intelligence**: Ingests product title, category, tech specifications, pricing, savings percentage, and verified MongoDB customer reviews into 3 concise structured takeaways.
+- **Fail-Safe Real-Data Fallback**: Automatic deterministic synthesis engine ensuring 100% summary uptime even if quota limits are reached.
+- **Dedicated Modal Component (`AiSummaryModal.jsx`)**: Rendered via React `createPortal` with backdrop blur, bold header parsing, and numbered bullet badges.
 
-### 🔍 2. Unified Catalogue Filter & Search Engine
-- **Single-Controller Query Engine (`paginateProducts`)**: Handles live text search, exact category matching (`new RegExp`), dynamic price range constraints (`discountPrice <= maxPrice`), and multi-level sorting (*Low to High*, *High to Low*, *Top Rated*).
-- **Smooth Inline Mobile Accordion**: Expandable inline filter card directly beneath search controls without intrusive popups.
+### 🌊 2. 60 FPS Monochromatic 3D Dots Fabric Wave Hero
+- **HTML5 Canvas Trigonometric Simulation**: Pure mathematical 3D perspective projection (`Math.sin` + `Math.cos`) rendering a fluid, floating mesh fabric.
+- **Zero Heavy 3D Libraries**: Built directly with native `requestAnimationFrame` for buttery-smooth 60 FPS performance without Three.js overhead.
+- **Day & Night Adaptive**: Renders luminous white dots in Dark Mode and deep black dots in Light Mode.
 
-### 👤 3. Buyer Profile & Avatar Upload
-- **Cloudinary CDN Pipeline**: Direct memory-stream upload via Multer buffer.
-- **Role Guarded**: Strictly reserved for verified Buyers (`role === "Buyer"`).
-- **Top Navigation Sync**: Real-time avatar thumbnail reflection in the top navigation header.
+### 🎨 3. Custom Color & Size Variant Management
+- **Multi-Color Selector**: Supports 7 preset monochromatic shades plus custom hex/named colors with live removable chips (`[Color ✕]`) and `Enter` key support.
+- **Size Selection**: Standard merchandise and clothing sizes (`XS`, `S`, `M`, `L`, `XL`, `XXL`, `3XL`).
+- **Cart & Order Tagging**: Selected variants persist across shopping bag, checkout breakdown, order receipts, and invoice records.
 
-### 🔐 4. Complete Password Management & Security
-- **Logged-in Password Change**: Validates current password with bcrypt before updating.
-- **Forgot Password Recovery**: Dispatches secure 15-minute tokenized reset links via Nodemailer.
-- **Form Auto-Clear & Autofill Lock**: Prevents cached credential auto-population on auth forms.
+### 🔍 4. Unified Catalogue Filter & Search Engine
+- **Single-Controller Query Engine (`paginateProducts`)**: Handles live regex text search, category filtering, price range constraints, and multi-level sorting (*Price: Low to High*, *High to Low*, *Top Rated*).
+- **Responsive Controls**: Sidebar filtering for desktop and expandable inline filter cards for mobile.
 
-### ⚡ 5. Real-Time Cart, Wishlist & Order Processing
-- **RTK Query Cache Tags**: Automatic cache invalidation (`invalidatesTags: ["Cart", "Wishlist", "Order"]`) updates badges instantly without page refreshes.
-- **Checkout Engine**: Address validation, COD / simulated online payment, and automatic stock deduction.
+### 📦 5. Single-Vendor Admin & Inventory Control Hub
+- **Streamlined Store Metrics**: Real-time analytics tracking `Total Revenue (₹)`, `Orders Received`, and `Active Listings`.
+- **Instant Stock Refill Modal**: One-click inventory restocker with Additive/Set Absolute Modes without requiring full product editing.
+- **Order Fulfillment Pipeline**: Update shipping states (*Placed → Processing → Shipped → Delivered*) with customer cancel guards.
 
-### 📊 6. Master Store Owner (Admin/Seller) Hub
-- **Analytics Dashboard**: Real-time total revenue, order count, and active product metrics.
-- **Catalog Management**: Instant product updates, stock control, and Cloudinary multi-image uploads.
-- **Fulfillment Management**: Track customer orders and update shipping states (*Placed → Processing → Shipped → Delivered*).
+### 💳 6. Flexible Order Checkout & Stock Management
+- **Multi-Payment Selection**: Seamless checkout supporting **Cash on Delivery (COD)** and **Online / Prepaid Payment**.
+- **Automated Inventory Deduction**: Atomically decrements product stock upon order placement and guards against overselling.
 
 ### ☀️/🌙 7. Day & Night Monochrome Theming Engine
-- **Context API Architecture**: Seamless switching between **Deep Obsidian Night** and **Crisp Luxe Day** modes with localStorage persistence.
+- **Self-Contained `ThemeContext.jsx`**: Global theme inverter with media and footer preservation (`.no-invert` protection) while keeping `index.css` completely clean.
 
 ---
 
 ## 🛠️ Tech Stack & Dependencies
 
 ### **Frontend**
-- **Core**: React 19, ReactDOM (`createPortal`), Vite 6
+- **Core**: React 19, Vite, HTML5 Canvas API
 - **Routing**: React Router DOM v7
-- **State Management**: Redux Toolkit & RTK Query
-- **Styling**: Tailwind CSS, PostCSS, Pure Vanilla CSS
-- **Icons & UI Feedback**: React Icons (Heroicons), React Hot Toast
+- **State Management**: Redux Toolkit & Async Thunks (`authSlice`, `cartSlice`, `wishlistSlice`, `orderSlice`, `productSlice`, `reviewSlice`)
+- **Styling**: Tailwind CSS (Minimal directives preserved)
+- **Icons & Feedback**: React Icons (Heroicons), React Hot Toast
 
 ### **Backend**
 - **Runtime & Framework**: Node.js (ES Modules), Express.js
 - **Database**: MongoDB Atlas with Mongoose ODM
-- **Authentication**: JSON Web Tokens (JWT), Bcrypt password hashing
-- **Media CDN**: Cloudinary SDK & Multer (Memory Storage)
+- **Authentication**: JWT (JSON Web Tokens), Bcrypt password hashing
+- **Media CDN**: Cloudinary SDK & Multer memory storage
 - **Email Service**: Nodemailer (SMTP)
-- **Validation**: Joi schema validation
-- **AI Intelligence**: Google Gemini 3.6 Flash REST API
+- **AI Engine**: Google Gemini 1.5 Flash REST API
 
 ---
 
@@ -72,12 +72,14 @@
 ```
 nuvora-fs/
 ├── Frontend/                        # React 19 Client
-│   ├── public/                      # Static assets & SVG icons
+│   ├── public/                      # Static assets & icons
 │   ├── src/
+│   │   ├── api/                     # Axios instance & interceptors
 │   │   ├── Components/              # Reusable UI components
 │   │   │   ├── Cart/                # CartItem, OrderSummary
-│   │   │   ├── Common/              # Navbar, Footer, Loader, Route Guards, ThemeToggle
-│   │   │   ├── Product/             # ProductCard, ProductFilter, ReviewSection
+│   │   │   ├── Common/              # Navbar, Footer, Loader, ProtectedRoute, BuyerRoute, ThemeToggle
+│   │   │   ├── Home/                # HeroFabricBackground (60fps Canvas)
+│   │   │   ├── Product/             # ProductCard, ProductFilter, ReviewSection, AiSummaryModal
 │   │   │   └── Seller/              # SellerSidebar
 │   │   ├── context/                 # ThemeContext (Day/Night state)
 │   │   ├── Pages/                   # Application views
@@ -86,12 +88,11 @@ nuvora-fs/
 │   │   │   ├── Public/              # Home, Shop, ProductDetails, VerifyMail
 │   │   │   ├── Seller/              # SellerDashboard, AddProduct, SellerOrders
 │   │   │   └── Error/               # NotFound (404)
-│   │   ├── redux/                   # RTK Query apiSlice, authSlice, store
-│   │   ├── App.jsx                  # Route definitions
-│   │   ├── index.css                # Tailwind directives
+│   │   ├── redux/                   # Redux Toolkit Slices & Store
+│   │   ├── App.jsx                  # Application Router
+│   │   ├── index.css                # Tailwind base directives
 │   │   └── main.jsx                 # Redux Provider & DOM entrypoint
 │   ├── package.json
-│   ├── tailwind.config.js
 │   └── vite.config.js
 │
 ├── backend/                         # Express REST API Server
@@ -99,7 +100,7 @@ nuvora-fs/
 │   │   ├── config/                  # MongoDB & Cloudinary configurations
 │   │   ├── controllers/             # Product, User, Cart, Wishlist, Order, Review
 │   │   ├── email/                   # Nodemailer verification & reset templates
-│   │   ├── middlewares/             # JWT auth (hashToken, verifyToken), Multer, Role guards
+│   │   ├── middlewares/             # JWT auth, Multer, Role guards (isAdmin)
 │   │   ├── models/                  # Mongoose schemas (User, Product, Cart, Order, Review)
 │   │   ├── routers/                 # Express API routes
 │   │   └── validator/               # Joi request validation schemas
@@ -107,8 +108,8 @@ nuvora-fs/
 │   ├── server.js                    # Express app entrypoint
 │   └── package.json
 │
-├── .gitignore                       # Root git ignore (Excludes all .env & secrets)
-├── README.md                        # Documentation
+├── .gitignore                       # Root git ignore (Strictly excludes all .env files)
+├── README.md                        # Project documentation
 └── NUVORA_TECHNICAL_ARCHITECTURE_REPORT.pdf # Complete PDF architecture guide
 ```
 
@@ -178,20 +179,21 @@ nuvora-fs/
 | `/user/register` | `POST` | Public | Register new buyer account & dispatch verification email |
 | `/user/login` | `POST` | Public | Authenticate user & issue signed JWT |
 | `/user/profile` | `GET` / `PUT` | Logged In | Fetch / Update user profile |
-| `/user/profile/picture` | `PUT` | Buyer | Upload avatar directly to Cloudinary (face crop) |
+| `/user/profile/picture` | `PUT` | Buyer | Upload avatar directly to Cloudinary |
 | `/user/forgot-password` | `POST` | Public | Send 15-minute password reset link |
 | `/user/reset-password` | `POST` | Public | Verify token and update password |
 | `/product/paginate` | `GET` | Public | Unified multi-filter catalog query |
 | `/product/:id` | `GET` | Public | Fetch single product specs |
-| `/product/:id/ai-summary` | `GET` | Public | Google Gemini AI summary generated from database reviews |
-| `/product/add` | `POST` | Seller | Upload new product with Cloudinary images |
-| `/cart` | `GET` / `POST` | Buyer | Get cart items / Add item to bag |
-| `/cart/remove/:productId` | `DELETE` | Buyer | Remove product from bag |
+| `/product/:id/ai-summary` | `GET` | Public | Google Gemini AI summary generated from specs & reviews |
+| `/product/add` | `POST` | Seller/Admin | Upload new product with Cloudinary images & variants |
+| `/product/refill-stock` | `PATCH` | Seller/Admin | Instant inventory restock (Additive/Absolute) |
+| `/cart` | `GET` / `POST` | Buyer | Get cart items / Add item to bag with color & size |
+| `/cart/remove/:cartItemId` | `DELETE` | Buyer | Remove product from bag |
 | `/wishlist` | `GET` / `POST` | Buyer | Get wishlist / Save product |
 | `/order/place` | `POST` | Buyer | Convert bag to order & deduct inventory stock |
 | `/order/my-orders` | `GET` | Buyer | Customer order history & timeline tracking |
-| `/order/seller-orders` | `GET` | Seller | Store owner order management |
-| `/order/status/:orderId` | `PUT` | Seller | Update order shipping status |
+| `/order/seller-orders` | `GET` | Seller/Admin | Store owner order management |
+| `/order/status/:orderId` | `PUT` | Seller/Admin | Update order shipping status |
 | `/review/product/:id` | `GET` | Public | Fetch customer reviews and star ratings |
 | `/review/add` | `POST` | Buyer | Post review & recalculate average product rating |
 

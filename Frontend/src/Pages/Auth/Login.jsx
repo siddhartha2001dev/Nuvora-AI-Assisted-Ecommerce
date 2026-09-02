@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { useLoginMutation } from "../../redux/apiSlice";
-import { setCredentials } from "../../redux/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
 import { HiOutlineMail, HiOutlineLockClosed } from "react-icons/hi";
 
@@ -10,10 +9,11 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [loginUser, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { loading: isLoading } = useSelector((state) => state.auth);
 
   // Explicitly clear fields on mount or navigation
   useEffect(() => {
@@ -32,31 +32,23 @@ const Login = () => {
     }
 
     try {
-      const res = await loginUser({ email, password }).unwrap();
+      const res = await dispatch(loginUser({ email, password })).unwrap();
 
       // Clear fields immediately on success
       setEmail("");
       setPassword("");
 
-      // Dispatch to Redux store
-      dispatch(
-        setCredentials({
-          data: res?.data,
-          accessToken: res?.accessToken,
-        })
-      );
-
       toast.success(`Welcome back, ${res?.data?.userName || "User"}!`);
 
-      // If Seller, redirect to Seller Dashboard, otherwise redirect to intended or home page
-      if (res?.data?.role === "Seller") {
+      // If Admin or Seller, redirect to Admin Dashboard
+      if (res?.data?.role === "Seller" || res?.data?.role === "Admin") {
         navigate("/seller/dashboard");
       } else {
         navigate(from === "/login" ? "/" : from);
       }
     } catch (err) {
       const errorMsg =
-        err?.data?.message || "Invalid credentials. Please verify your email or password.";
+        typeof err === "string" ? err : "Invalid credentials. Please verify your email or password.";
       toast.error(errorMsg);
 
       // If unverified email error, provide link to verify

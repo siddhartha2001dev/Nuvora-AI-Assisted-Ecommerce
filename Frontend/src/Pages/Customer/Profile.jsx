@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
-  useGetProfileQuery,
-  useUpdateProfileMutation,
-  useUploadProfilePictureMutation,
-  useChangePasswordMutation,
-  useLogoutMutation,
-} from "../../redux/apiSlice";
-import { logoutUser, updateUserData } from "../../redux/slices/authSlice";
+  fetchProfile,
+  updateProfile,
+  uploadProfilePicture,
+  changePassword,
+  logoutUser,
+  updateUserData,
+} from "../../redux/slices/authSlice";
 import Loader from "../../Components/Common/Loader";
 import toast from "react-hot-toast";
 import {
@@ -28,13 +28,11 @@ const Profile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  const { data: profileRes, isLoading } = useGetProfileQuery();
-  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
-  const [uploadProfilePic, { isLoading: isUploadingPic }] = useUploadProfilePictureMutation();
-  const [changePassword, { isLoading: isChangingPass }] = useChangePasswordMutation();
-  const [logoutApi] = useLogoutMutation();
+  const { user, loading: isLoading } = useSelector((state) => state.auth);
 
-  const user = profileRes?.data || {};
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isUploadingPic, setIsUploadingPic] = useState(false);
+  const [isChangingPass, setIsChangingPass] = useState(false);
 
   const [formData, setFormData] = useState({
     userName: "",
@@ -48,6 +46,10 @@ const Profile = () => {
     newPassword: "",
     confirmPassword: "",
   });
+
+  useEffect(() => {
+    dispatch(fetchProfile());
+  }, [dispatch]);
 
   useEffect(() => {
     if (user) {
@@ -77,12 +79,15 @@ const Profile = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
 
+    setIsUpdating(true);
     try {
-      const res = await updateProfile(formData).unwrap();
+      const res = await dispatch(updateProfile(formData)).unwrap();
       dispatch(updateUserData(res?.data || { ...user, ...formData }));
       toast.success("Profile details updated successfully!");
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to update profile");
+      toast.error(typeof err === "string" ? err : "Failed to update profile");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -104,11 +109,14 @@ const Profile = () => {
       return;
     }
 
+    setIsChangingPass(true);
     try {
-      await changePassword({
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
-      }).unwrap();
+      await dispatch(
+        changePassword({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        })
+      ).unwrap();
 
       toast.success("Password changed successfully!");
       setPasswordData({
@@ -117,7 +125,9 @@ const Profile = () => {
         confirmPassword: "",
       });
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to change password. Please check your current password.");
+      toast.error(typeof err === "string" ? err : "Failed to change password. Please check your current password.");
+    } finally {
+      setIsChangingPass(false);
     }
   };
 
@@ -139,29 +149,26 @@ const Profile = () => {
     uploadData.append("avatar", file);
 
     const toastId = toast.loading("Uploading profile picture...");
+    setIsUploadingPic(true);
     try {
-      const res = await uploadProfilePic(uploadData).unwrap();
+      const res = await dispatch(uploadProfilePicture(uploadData)).unwrap();
       dispatch(updateUserData(res?.data || { ...user, avatarUrl: res?.avatarUrl }));
       toast.success("Profile picture updated successfully!", { id: toastId });
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to upload profile picture", { id: toastId });
+      toast.error(typeof err === "string" ? err : "Failed to upload profile picture", { id: toastId });
     } finally {
+      setIsUploadingPic(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   const handleLogout = async () => {
-    try {
-      await logoutApi().unwrap();
-    } catch {
-      // ignore
-    }
-    dispatch(logoutUser());
+    await dispatch(logoutUser());
     toast.success("Logged out successfully");
     navigate("/login");
   };
 
-  if (isLoading) {
+  if (isLoading && !user) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader text="Loading profile details..." />
@@ -169,7 +176,7 @@ const Profile = () => {
     );
   }
 
-  const initials = user.userName
+  const initials = user?.userName
     ? user.userName
         .split(" ")
         .map((n) => n[0])
@@ -178,7 +185,8 @@ const Profile = () => {
         .slice(0, 2)
     : "NV";
 
-  const isBuyer = user.role === "Buyer";
+  const isAdmin = user?.role === "Admin" || user?.role === "Seller";
+  const isBuyer = !isAdmin;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6 sm:space-y-8">
@@ -188,7 +196,7 @@ const Profile = () => {
           ACCOUNT SETTINGS
         </span>
         <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-['Syne',sans-serif]">
-          {user.role === "Seller" ? "Store Owner Profile" : "Customer Profile"}
+          {isAdmin ? "Admin Profile" : "Customer Profile"}
         </h1>
       </div>
 
@@ -197,7 +205,7 @@ const Profile = () => {
         <div className="md:col-span-1 bg-[#121215] border border-neutral-800/80 rounded-3xl p-6 text-center space-y-4 h-fit">
           {/* Avatar Picture with Buyer Upload Trigger */}
           <div className="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto group">
-            {user.avatarUrl ? (
+            {user?.avatarUrl ? (
               <img
                 src={user.avatarUrl}
                 alt={user.userName || "Avatar"}
@@ -234,9 +242,9 @@ const Profile = () => {
 
           <div>
             <h3 className="text-base sm:text-lg font-bold text-white">
-              {user.userName || "Nuvora Member"}
+              {user?.userName || "Nuvora Member"}
             </h3>
-            <p className="text-xs text-neutral-400 mt-0.5">{user.email}</p>
+            <p className="text-xs text-neutral-400 mt-0.5">{user?.email}</p>
             {isBuyer && (
               <button
                 type="button"
@@ -252,7 +260,7 @@ const Profile = () => {
           <div className="flex items-center justify-center space-x-1.5">
             <span className="inline-flex items-center space-x-1 text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-full bg-white text-black shadow-sm">
               <HiOutlineShieldCheck className="text-xs" />
-              <span>{user.role === "Seller" ? "Store Owner (Admin)" : "Verified Buyer"}</span>
+              <span>{isAdmin ? "Store Admin" : "Verified Buyer"}</span>
             </span>
           </div>
 
@@ -331,7 +339,7 @@ const Profile = () => {
 
               <div className="space-y-1.5">
                 <label className="block text-xs uppercase tracking-wider font-semibold text-neutral-400">
-                  {user.role === "Seller" ? "Store Dispatch / Business Address" : "Default Delivery Address"}
+                  {isAdmin ? "Store Dispatch / Business Address" : "Default Delivery Address"}
                 </label>
                 <div className="relative">
                   <textarea

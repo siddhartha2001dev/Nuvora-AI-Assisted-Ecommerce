@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import { useVerifyEmailMutation } from "../../redux/apiSlice";
+import { Link, useSearchParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { verifyEmailThunk } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
 import { HiOutlineCheckCircle, HiOutlineArrowRight, HiOutlineMail, HiOutlineKey } from "react-icons/hi";
 
@@ -11,9 +12,9 @@ const VerifyMail = () => {
 
   const [inputToken, setInputToken] = useState(tokenParam);
   const [isVerified, setIsVerified] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [verifyEmail, { isLoading }] = useVerifyEmailMutation();
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleVerify = async (tok) => {
     const tokenToUse = tok || inputToken;
@@ -22,12 +23,15 @@ const VerifyMail = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
-      const res = await verifyEmail(tokenToUse).unwrap();
+      const res = await dispatch(verifyEmailThunk(tokenToUse)).unwrap();
       setIsVerified(true);
       toast.success(res?.message || "Email verified successfully!");
     } catch (err) {
-      toast.error(err?.data?.message || "Verification failed. Token may be invalid or expired.");
+      toast.error(typeof err === "string" ? err : "Verification failed. Token may be invalid or expired.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

@@ -1,9 +1,9 @@
-export const isSeller = async (req, res, next) => {
+export const isAdmin = async (req, res, next) => {
     try {
-        if (!req.user || req.user.role !== "Seller") {
+        if (!req.user || (req.user.role !== "Admin" && req.user.role !== "Seller")) {
             return res.status(403).json({
                 success: false,
-                message: "Access denied: Only sellers can perform this action"
+                message: "Access denied: Only admins can perform this action"
             });
         }
         next();

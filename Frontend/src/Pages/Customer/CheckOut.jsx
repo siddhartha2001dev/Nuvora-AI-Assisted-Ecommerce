@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { useGetCartQuery, usePlaceOrderMutation } from "../../redux/apiSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { placeOrder } from "../../redux/slices/orderSlice";
+import { fetchCart } from "../../redux/slices/cartSlice";
 import OrderSummary from "../../Components/Cart/OrderSummary";
 import Loader from "../../Components/Common/Loader";
 import toast from "react-hot-toast";
@@ -9,12 +10,15 @@ import { HiOutlineCash, HiOutlineCreditCard, HiOutlineLocationMarker } from "rea
 
 const CheckOut = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const { user } = useSelector((state) => state.auth);
+  const { items: cartItems, loading: isCartLoading } = useSelector((state) => state.cart);
+  const { actionLoading: isPlacingOrder } = useSelector((state) => state.orders);
 
-  const { data: cartRes, isLoading: isCartLoading } = useGetCartQuery();
-  const [placeOrder, { isLoading: isPlacingOrder }] = usePlaceOrderMutation();
-
-  const cartItems = cartRes?.data || [];
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [addressData, setAddressData] = useState({
@@ -65,12 +69,17 @@ const CheckOut = () => {
       // Place orders for items in cart
       for (const item of cartItems) {
         const prodId = item.productId?._id || item.productId;
-        await placeOrder({
-          productId: prodId,
-          quantity: item.quantity || 1,
-          address: fullAddress,
-          paymentMethod: paymentMethod,
-        }).unwrap();
+        await dispatch(
+          placeOrder({
+            productId: prodId,
+            quantity: item.quantity || 1,
+            selectedColor: item.selectedColor || "",
+            selectedSize: item.selectedSize || "",
+            cartItemId: item._id,
+            address: fullAddress,
+            paymentMethod: paymentMethod,
+          })
+        ).unwrap();
       }
 
       toast.success(
@@ -80,11 +89,11 @@ const CheckOut = () => {
       );
       navigate("/my-orders");
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to place order. Please check item stock.");
+      toast.error(typeof err === "string" ? err : "Failed to place order. Please check item stock.");
     }
   };
 
-  if (isCartLoading) {
+  if (isCartLoading && cartItems.length === 0) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader text="Preparing checkout..." />
@@ -257,10 +266,7 @@ const CheckOut = () => {
               {cartItems.map((item) => {
                 const prod = item.productId || {};
                 const price = prod.discountPrice > 0 ? prod.discountPrice : prod.price || 0;
-                const img =
-                  prod.images && prod.images.length > 0
-                    ? prod.images[0]
-                    : "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=800&auto=format&fit=crop";
+                const img = prod?.images?.[0] || "";
 
                 return (
                   <div key={item._id} className="flex items-center space-x-3 min-w-0">
@@ -273,6 +279,13 @@ const CheckOut = () => {
                       <p className="text-xs font-semibold text-white truncate" title={prod.title}>
                         {prod.title || "Essential Piece"}
                       </p>
+                      {(item.selectedColor || item.selectedSize) && (
+                        <p className="text-[10px] text-neutral-400 font-mono">
+                          {item.selectedColor && `Color: ${item.selectedColor}`}
+                          {item.selectedColor && item.selectedSize && " • "}
+                          {item.selectedSize && `Size: ${item.selectedSize}`}
+                        </p>
+                      )}
                       <p className="text-[11px] text-neutral-400 font-mono">
                         Qty: {item.quantity} • ₹{(price * (item.quantity || 1)).toLocaleString()}
                       </p>

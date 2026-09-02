@@ -4,7 +4,7 @@ import productSchema from "../models/productSchema.js";
 // 1. Add to Cart / Update Quantity (With Real-Time Stock Limits & Decrement Support)
 export const addToCart = async (req, res) => {
     try {
-        const { productId, quantity = 1 } = req.body;
+        const { productId, quantity = 1, selectedColor = "", selectedSize = "" } = req.body;
 
         if (!productId) {
             return res.status(400).json({
@@ -22,10 +22,12 @@ export const addToCart = async (req, res) => {
             });
         }
 
-        // Check if item already in user's cart
+        // Check if item with matching color and size already in user's cart
         let cartItem = await cartSchema.findOne({
             userId: req.userId,
-            productId
+            productId,
+            selectedColor: selectedColor || "",
+            selectedSize: selectedSize || ""
         });
 
         const requestedDelta = Number(quantity);
@@ -66,7 +68,9 @@ export const addToCart = async (req, res) => {
             cartItem = await cartSchema.create({
                 userId: req.userId,
                 productId,
-                quantity: newTotalQty
+                quantity: newTotalQty,
+                selectedColor: selectedColor || "",
+                selectedSize: selectedSize || ""
             });
         }
 

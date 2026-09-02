@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useGetPaginatedProductsQuery } from "../../redux/apiSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPaginatedProducts } from "../../redux/slices/productSlice";
 import ProductFilter from "../../Components/Product/ProductFilter";
 import ProductCard from "../../Components/Product/ProductCard";
 import Loader from "../../Components/Common/Loader";
@@ -14,6 +15,9 @@ import {
 } from "react-icons/hi";
 
 const Shop = () => {
+  const dispatch = useDispatch();
+  const { paginatedData, loading: isLoading } = useSelector((state) => state.products);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const searchParamQuery = searchParams.get("search") || "";
   const searchParamCategory = searchParams.get("category") || "All";
@@ -32,37 +36,46 @@ const Shop = () => {
     setPage(1);
   }, [searchParams]);
 
-  // Backend separate paginate query with live filter parameters
-  const { data: paginateResponse, isLoading } = useGetPaginatedProductsQuery({
-    page,
-    limit: 9,
-    category: selectedCategory,
-    search: searchQuery,
-    maxPrice: priceRange,
-    sortBy,
-  });
+  // Fetch paginated products using Redux async thunk
+  useEffect(() => {
+    dispatch(
+      fetchPaginatedProducts({
+        page,
+        limit: 9,
+        category: selectedCategory,
+        search: searchQuery,
+        maxPrice: priceRange,
+        sortBy,
+      })
+    );
+  }, [dispatch, page, selectedCategory, searchQuery, priceRange, sortBy]);
 
-  const products = paginateResponse?.data || [];
-  const totalPages = paginateResponse?.totalPages || 1;
-  const currentPage = paginateResponse?.currentPage || 1;
-  const totalProducts = paginateResponse?.totalProducts || 0;
+  const products = paginatedData?.data || [];
+  const totalPages = paginatedData?.totalPages || 1;
+  const currentPage = paginatedData?.currentPage || 1;
+  const totalProducts = paginatedData?.totalProducts || 0;
 
   const handleCategoryChange = (cat) => {
-    setSelectedCategory(cat);
+    // If clicking already selected category, toggle back to All
+    const nextCategory = cat === selectedCategory && cat !== "All" ? "All" : cat;
+    setSelectedCategory(nextCategory);
     setPage(1);
-    if (cat === "All") {
-      searchParams.delete("category");
+
+    const updatedParams = new URLSearchParams(searchParams);
+    if (nextCategory === "All") {
+      updatedParams.delete("category");
     } else {
-      searchParams.set("category", cat);
+      updatedParams.set("category", nextCategory);
     }
-    setSearchParams(searchParams);
+    setSearchParams(updatedParams);
   };
 
   const handleClearSearch = () => {
     setSearchQuery("");
     setPage(1);
-    searchParams.delete("search");
-    setSearchParams(searchParams);
+    const updatedParams = new URLSearchParams(searchParams);
+    updatedParams.delete("search");
+    setSearchParams(updatedParams);
   };
 
   const handleResetFilters = () => {
@@ -71,9 +84,7 @@ const Shop = () => {
     setPriceRange(25000);
     setSortBy("Featured");
     setPage(1);
-    searchParams.delete("search");
-    searchParams.delete("category");
-    setSearchParams(searchParams);
+    setSearchParams(new URLSearchParams());
   };
 
   return (
@@ -175,7 +186,7 @@ const Shop = () => {
         )}
       </div>
 
-      {/* Mobile Inline Expandable Filter Block (Directly below search bar & filter button) */}
+      {/* Mobile Inline Expandable Filter Block */}
       <div
         className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
           showMobileFilter ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
@@ -215,7 +226,7 @@ const Shop = () => {
 
         {/* Products Grid Area */}
         <div className="flex-1 w-full space-y-8 min-w-0">
-          {isLoading ? (
+          {isLoading && products.length === 0 ? (
             <div className="py-20">
               <Loader text="Loading luxury catalogue..." />
             </div>
