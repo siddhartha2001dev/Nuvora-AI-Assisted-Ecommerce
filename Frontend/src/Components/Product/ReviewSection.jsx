@@ -4,12 +4,6 @@ import { fetchProductReviews, addReview } from "../../redux/slices/reviewSlice";
 import toast from "react-hot-toast";
 import { HiStar, HiOutlineCheckCircle, HiOutlineChatAlt2 } from "react-icons/hi";
 
-/**
- * ReviewSection Component
- * -----------------------
- * Displays verified customer reviews for a product.
- * Allows logged-in buyers to submit or update their review and star rating.
- */
 const ReviewSection = ({ productId }) => {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
@@ -20,19 +14,18 @@ const ReviewSection = ({ productId }) => {
     (state) => state.reviews
   );
 
-  // 1. Fetch reviews on product load
+  // Fetch reviews on load
   useEffect(() => {
     if (productId) {
       dispatch(fetchProductReviews(productId));
     }
   }, [dispatch, productId]);
 
-  // 2. Check if the current logged-in user has already submitted a review
+  // Check existing review
   const existingUserReview = reviews.find(
     (r) => (r.userId?._id || r.userId) === user?._id
   );
 
-  // 3. Pre-fill rating and comment if user is editing their existing review
   useEffect(() => {
     if (existingUserReview) {
       setRating(existingUserReview.rating || 5);
@@ -40,13 +33,13 @@ const ReviewSection = ({ productId }) => {
     }
   }, [existingUserReview]);
 
-  // 4. Calculate average rating score
+  // Average rating
   const averageRating =
     reviews.length > 0
       ? (reviews.reduce((acc, r) => acc + (r.rating || 5), 0) / reviews.length).toFixed(1)
       : "5.0";
 
-  // 5. Submit or update review handler
+  // Submit review
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -81,7 +74,7 @@ const ReviewSection = ({ productId }) => {
 
   return (
     <section className="mt-16 pt-12 border-t border-neutral-800">
-      {/* Section Header & Average Rating */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-white font-['Syne',sans-serif]">
@@ -111,7 +104,7 @@ const ReviewSection = ({ productId }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Write / Edit Review Form */}
+        {/* Form */}
         <div className="lg:col-span-1 bg-[#121215] border border-neutral-800/80 rounded-2xl p-6 h-fit space-y-5">
           <div className="flex items-center justify-between">
             <h3 className="text-sm uppercase tracking-wider font-bold text-white">
@@ -125,7 +118,7 @@ const ReviewSection = ({ productId }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Star Rating Selector */}
+            {/* Stars */}
             <div>
               <label className="block text-xs uppercase tracking-wider font-medium text-neutral-400 mb-2">
                 Select Rating
@@ -148,7 +141,7 @@ const ReviewSection = ({ productId }) => {
               </div>
             </div>
 
-            {/* Comment Textarea */}
+            {/* Comment */}
             <div>
               <label className="block text-xs uppercase tracking-wider font-medium text-neutral-400 mb-2">
                 Your Feedback
@@ -162,7 +155,6 @@ const ReviewSection = ({ productId }) => {
               />
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -177,7 +169,7 @@ const ReviewSection = ({ productId }) => {
           </form>
         </div>
 
-        {/* Reviews List Column */}
+        {/* Reviews list */}
         <div className="lg:col-span-2 space-y-4">
           {isLoading && reviews.length === 0 ? (
             <p className="text-xs text-neutral-500">Loading verified reviews...</p>
@@ -196,7 +188,6 @@ const ReviewSection = ({ productId }) => {
                 className="bg-[#121215] border border-neutral-800/70 rounded-2xl p-6 space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  {/* User Profile info */}
                   <div className="flex items-center space-x-3">
                     <div className="w-9 h-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-xs font-bold text-white">
                       {(rev.userId?.userName || "U").slice(0, 2).toUpperCase()}
@@ -217,7 +208,6 @@ const ReviewSection = ({ productId }) => {
                     </div>
                   </div>
 
-                  {/* Rating Stars */}
                   <div className="flex text-amber-400 text-sm">
                     {[...Array(5)].map((_, i) => (
                       <HiStar

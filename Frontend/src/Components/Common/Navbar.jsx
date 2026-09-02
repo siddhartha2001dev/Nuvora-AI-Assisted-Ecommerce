@@ -23,19 +23,6 @@ import {
   HiOutlineChevronRight,
 } from "react-icons/hi";
 
-/**
- * Navbar Component
- * ----------------
- * Primary header navigation for NUVORA.
- *
- * Responsibilities:
- * - Brand logo link (redirects Admin to Dashboard, Buyers to Home)
- * - Navigation links for Desktop and responsive Mobile drawer
- * - Search bar, Cart badge, and Wishlist badge for buyers
- * - User Profile Dropdown with Logout action
- * - Day / Night Theme Toggle Switch
- * - Auto-hide on mobile when scrolling into footer
- */
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);

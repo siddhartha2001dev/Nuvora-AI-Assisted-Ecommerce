@@ -2,12 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { HiOutlineShieldCheck, HiOutlineTruck } from "react-icons/hi";
 
-/**
- * OrderSummary Component
- * ----------------------
- * Displays price breakdown (Subtotal, Standard Delivery, Discount, Total),
- * checkout call-to-action button, and trust security badges.
- */
 const OrderSummary = ({
   subtotal = 0,
   shipping = 0,
@@ -16,17 +10,16 @@ const OrderSummary = ({
   buttonLink = "/checkout",
   onButtonClick,
 }) => {
-  // 1. Calculate final grand total (guarantee non-negative)
+  // Total calculation
   const total = Math.max(0, subtotal + shipping - discount);
 
   return (
     <div className="bg-[#121215] border border-neutral-800/80 rounded-2xl p-6 space-y-6 h-fit">
-      {/* Card Header */}
       <h3 className="text-base font-bold uppercase tracking-wider text-white border-b border-neutral-800 pb-4">
         Order Summary
       </h3>
 
-      {/* Price Calculation Breakdown */}
+      {/* Pricing breakdown */}
       <div className="space-y-3 text-sm text-neutral-400">
         <div className="flex justify-between">
           <span>Subtotal</span>
@@ -52,7 +45,7 @@ const OrderSummary = ({
         </div>
       </div>
 
-      {/* Primary Action Button */}
+      {/* Checkout button */}
       {onButtonClick ? (
         <button
           type="button"
@@ -70,7 +63,7 @@ const OrderSummary = ({
         </Link>
       )}
 
-      {/* Security & Shipping Badges */}
+      {/* Badges */}
       <div className="space-y-2 pt-2 text-[11px] text-neutral-500">
         <div className="flex items-center space-x-2">
           <HiOutlineShieldCheck className="text-neutral-400 text-base" />

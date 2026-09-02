@@ -1,19 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-/**
- * Footer Component
- * ----------------
- * Global dark footer for NUVORA.
- *
- * Characteristics:
- * - Remains sleek dark across both Dark & Light themes (has .no-invert and #app-footer)
- * - Brand story & establishment year (2026)
- * - Explore catalog links
- * - Customer Hub (Orders, Wishlist, Bag, Admin Portal)
- * - Newsletter subscription box
- * - Legal policies & copyright notice
- */
 const Footer = () => {
   return (
     <footer

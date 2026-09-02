@@ -1,17 +1,5 @@
 import React, { useEffect, useRef } from "react";
 
-/**
- * HeroFabricBackground Component
- * ------------------------------
- * A dedicated, self-contained Canvas component that generates an interactive
- * 3D-like wavy Monochromatic Dots Fabric animation behind the Hero Section.
- *
- * Characteristics:
- * - Oscillating dots grid simulating waving silk/fabric cloth.
- * - Monochromatic dots with depth-based size and opacity.
- * - Automatically adapts to theme changes smoothly.
- * - Zero external CSS dependencies (No changes to index.css).
- */
 const HeroFabricBackground = () => {
   const canvasRef = useRef(null);
 
@@ -23,7 +11,7 @@ const HeroFabricBackground = () => {
     let animationFrameId;
     let time = 0;
 
-    // Responsive Canvas Resizing
+    // Handle canvas resize
     const handleResize = () => {
       const parent = canvas.parentElement;
       if (parent) {
@@ -35,10 +23,10 @@ const HeroFabricBackground = () => {
     handleResize();
     window.addEventListener("resize", handleResize);
 
-    // Grid Parameters for the Fabric Dots Mesh
     const rows = 22;
     const cols = 45;
 
+    // Animation loop
     const render = () => {
       time += 0.02;
       const w = canvas.width;
@@ -49,32 +37,31 @@ const HeroFabricBackground = () => {
       const cellW = w / (cols - 1);
       const cellH = h / (rows - 1);
 
-      // Loop through matrix of dots
+      // Draw dots mesh
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const baseX = c * cellW;
           const baseY = r * cellH;
 
-          // Wave simulation math (Simulating 3D silk/fabric folds)
+          // Wave calculations
           const wave1 = Math.sin(c * 0.22 + time + r * 0.15);
           const wave2 = Math.cos(r * 0.28 - time * 0.8 + c * 0.1);
-          const elevation = (wave1 + wave2) * 16; // Height offset
+          const elevation = (wave1 + wave2) * 16;
 
           const x = baseX + Math.sin(time * 0.5 + r * 0.2) * 6;
           const y = baseY + elevation;
 
-          // Calculate depth-based size & opacity for 3D illusion
-          const depth = (elevation + 32) / 64; // Value between 0 and 1
+          const depth = (elevation + 32) / 64;
           const radius = Math.max(1.0, 1.4 + depth * 2.2);
           const alpha = Math.max(0.18, 0.22 + depth * 0.48);
 
-          // Draw the fabric dot
+          // Dot
           ctx.beginPath();
           ctx.arc(x, y, radius, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
           ctx.fill();
 
-          // Subtle horizontal connecting fabric threads
+          // Connect lines
           if (c < cols - 1) {
             const nextWave1 = Math.sin((c + 1) * 0.22 + time + r * 0.15);
             const nextWave2 = Math.cos(r * 0.28 - time * 0.8 + (c + 1) * 0.1);

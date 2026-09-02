@@ -121,31 +121,28 @@ export const paginateProducts = async (req, res) => {
     try {
         const { page = 1, limit = 9, category, search, maxPrice, sortBy } = req.query;
 
-        // Step 1: Calculate pagination skip
+        // Pagination
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
         const skip = (pageNum - 1) * limitNum;
 
-        // Step 2: Build the filter object step by step
+        // Query filters
         const filter = { isAvailable: true };
 
-        // Filter by Category
         if (category && category !== "All") {
             filter.category = category;
         }
 
-        // Filter by Search keyword (Title search)
         if (search && search.trim()) {
             filter.title = { $regex: search.trim(), $options: "i" };
         }
 
-        // Filter by Max Price
         if (maxPrice && Number(maxPrice) > 0) {
             filter.price = { $lte: Number(maxPrice) };
         }
 
-        // Step 3: Handle Sorting
-        let sortOption = { createdAt: -1 }; // Default: Newest first
+        // Sorting
+        let sortOption = { createdAt: -1 };
         if (sortBy === "Price: Low to High") {
             sortOption = { price: 1 };
         } else if (sortBy === "Price: High to Low") {
@@ -154,7 +151,7 @@ export const paginateProducts = async (req, res) => {
             sortOption = { rating: -1 };
         }
 
-        // Step 4: Query Database
+        // Query database
         const totalProducts = await productSchema.countDocuments(filter);
         const products = await productSchema.find(filter)
             .populate("sellerId", "userName shopName email avatarUrl")
@@ -162,7 +159,6 @@ export const paginateProducts = async (req, res) => {
             .skip(skip)
             .limit(limitNum);
 
-        // Step 5: Send Response
         return res.status(200).json({
             success: true,
             message: "Products fetched successfully",
@@ -346,7 +342,7 @@ export const deleteProduct = async (req, res) => {
 };
 
 
-// 8. AI Product Summarizer
+// AI summary
 export const summarizeProductWithAI = async (req, res) => {
     try {
         const product = await productSchema.findById(req.params.id);
@@ -363,7 +359,7 @@ export const summarizeProductWithAI = async (req, res) => {
 
         let summary = "";
 
-        // Try calling Google Gemini API
+        // Call Gemini API
         if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.startsWith("AIzaSy")) {
             try {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
@@ -380,7 +376,7 @@ export const summarizeProductWithAI = async (req, res) => {
             }
         }
 
-        // Smart Structured Summary Fallback (Guarantees fresh, accurate 3-bullet summary)
+        // Fallback summary if API limit reached
         if (!summary) {
             const effectivePrice = product.discountPrice > 0 ? product.discountPrice : product.price;
             const savingsText = product.discountPrice > 0 ? ` (Saves ₹${product.price - product.discountPrice})` : "";
