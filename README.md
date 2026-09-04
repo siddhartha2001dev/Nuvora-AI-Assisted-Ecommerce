@@ -1,5 +1,8 @@
 # 🌌 NUVORA — Monochrome D2C E-Commerce Platform with Google Gemini AI
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-nuvora--ruddy.vercel.app-black?style=for-the-badge&logo=vercel)](https://nuvora-ruddy.vercel.app/)
+[![Backend API](https://img.shields.io/badge/Backend%20API-Render-46E3B7?style=for-the-badge&logo=render)](https://nuvora-backend-12hp.onrender.com/)
+
 [![React](https://img.shields.io/badge/React-19-black?logo=react)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8-purple?logo=vite)](https://vitejs.dev/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
@@ -10,6 +13,9 @@
 [![Brevo API](https://img.shields.io/badge/Email-Brevo%20REST%20API-0B996F?logo=brevo)](https://www.brevo.com/)
 
 > **NUVORA** is a sleek, monochromatic Direct-to-Consumer (D2C) luxury e-commerce platform built on a clean **Single-Vendor, Multi-Buyer** architecture. Powered by React 19, Redux Toolkit, Node.js Express 5, MongoDB Atlas, Cloudinary CDN, **Brevo HTTPS Email Engine**, and the **Google Gemini 1.5 Flash AI** insights summarizer.
+
+🔗 **Live Application URL**: [https://nuvora-ruddy.vercel.app/](https://nuvora-ruddy.vercel.app/)  
+⚡ **Production Backend API**: [https://nuvora-backend-12hp.onrender.com/](https://nuvora-backend-12hp.onrender.com/)
 
 ---
 
@@ -175,7 +181,7 @@ nuvora-fs/
    ```
 3. *(Optional)* Create a `.env` file in the `Frontend/` directory:
    ```env
-   VITE_API_BASE_URL=http://localhost:8000
+   VITE_API_BASE_URL=https://nuvora-backend-12hp.onrender.com
    ```
 4. Start the Vite development server:
    ```bash
@@ -186,6 +192,10 @@ nuvora-fs/
 ---
 
 ## 🌐 Production Deployment Guide
+
+### Live Deployment Links
+- **Frontend (Vercel)**: [https://nuvora-ruddy.vercel.app/](https://nuvora-ruddy.vercel.app/)
+- **Backend (Render)**: [https://nuvora-backend-12hp.onrender.com/](https://nuvora-backend-12hp.onrender.com/)
 
 ### Deploy Backend to Render
 1. Create a new **Web Service** on [Render](https://render.com) connected to your GitHub repository.
@@ -201,7 +211,7 @@ nuvora-fs/
    - `BREVO_API_KEY`: *(Your Brevo API Key `xkeysib-...`)*
    - `GEMINI_API_KEY`: *(Your Google Gemini API Key)*
    - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
-   - `CLIENT_URL`: `https://your-frontend.vercel.app`
+   - `CLIENT_URL`: `https://nuvora-ruddy.vercel.app`
 
 ### Deploy Frontend to Vercel
 1. Import the repository into [Vercel](https://vercel.com).
@@ -209,7 +219,7 @@ nuvora-fs/
    - **Framework Preset**: `Vite`
    - **Root Directory**: `Frontend`
 3. Add Environment Variable:
-   - `VITE_API_BASE_URL`: `https://your-backend-name.onrender.com`
+   - `VITE_API_BASE_URL`: `https://nuvora-backend-12hp.onrender.com`
 4. Click **Deploy**.
 
 ---
