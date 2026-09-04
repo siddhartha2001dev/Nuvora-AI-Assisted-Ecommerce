@@ -6,7 +6,7 @@ import axios from "axios";
  * to the Authorization header for protected requests.
  */
 const api = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
 });
 
 // Request interceptor: Attach token before sending every request

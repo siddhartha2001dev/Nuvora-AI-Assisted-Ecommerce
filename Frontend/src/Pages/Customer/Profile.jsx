@@ -21,6 +21,8 @@ import {
   HiOutlineKey,
   HiOutlineShieldCheck,
   HiOutlineCamera,
+  HiOutlineEye,
+  HiOutlineEyeOff,
 } from "react-icons/hi";
 
 const Profile = () => {
@@ -33,6 +35,10 @@ const Profile = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUploadingPic, setIsUploadingPic] = useState(false);
   const [isChangingPass, setIsChangingPass] = useState(false);
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     userName: "",
@@ -382,15 +388,27 @@ const Profile = () => {
                 </label>
                 <div className="relative">
                   <input
-                    type="password"
+                    type={showCurrentPassword ? "text" : "password"}
                     name="currentPassword"
                     value={passwordData.currentPassword}
                     onChange={handlePasswordChange}
                     required
                     placeholder="Enter current password"
-                    className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
+                    className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white pl-10 pr-11 py-3 rounded-xl focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
                   />
                   <HiOutlineLockClosed className="absolute left-3.5 top-3.5 text-neutral-500 text-lg" />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-3.5 top-3.5 text-neutral-400 hover:text-white transition-colors focus:outline-none"
+                    tabIndex={-1}
+                  >
+                    {showCurrentPassword ? (
+                      <HiOutlineEyeOff className="text-lg" />
+                    ) : (
+                      <HiOutlineEye className="text-lg" />
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -401,15 +419,27 @@ const Profile = () => {
                   </label>
                   <div className="relative">
                     <input
-                      type="password"
+                      type={showNewPassword ? "text" : "password"}
                       name="newPassword"
                       value={passwordData.newPassword}
                       onChange={handlePasswordChange}
                       required
                       placeholder="Minimum 6 characters"
-                      className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
+                      className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white pl-10 pr-11 py-3 rounded-xl focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
                     />
                     <HiOutlineLockClosed className="absolute left-3.5 top-3.5 text-neutral-500 text-lg" />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3.5 top-3.5 text-neutral-400 hover:text-white transition-colors focus:outline-none"
+                      tabIndex={-1}
+                    >
+                      {showNewPassword ? (
+                        <HiOutlineEyeOff className="text-lg" />
+                      ) : (
+                        <HiOutlineEye className="text-lg" />
+                      )}
+                    </button>
                   </div>
                 </div>
 
@@ -419,15 +449,27 @@ const Profile = () => {
                   </label>
                   <div className="relative">
                     <input
-                      type="password"
+                      type={showConfirmPassword ? "text" : "password"}
                       name="confirmPassword"
                       value={passwordData.confirmPassword}
                       onChange={handlePasswordChange}
                       required
                       placeholder="Repeat new password"
-                      className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
+                      className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white pl-10 pr-11 py-3 rounded-xl focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
                     />
                     <HiOutlineLockClosed className="absolute left-3.5 top-3.5 text-neutral-500 text-lg" />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3.5 top-3.5 text-neutral-400 hover:text-white transition-colors focus:outline-none"
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? (
+                        <HiOutlineEyeOff className="text-lg" />
+                      ) : (
+                        <HiOutlineEye className="text-lg" />
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>

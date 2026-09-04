@@ -3,11 +3,12 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
-import { HiOutlineMail, HiOutlineLockClosed } from "react-icons/hi";
+import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -110,15 +111,27 @@ const Login = () => {
             </div>
             <div className="relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="new-password"
                 placeholder="••••••••"
-                className="w-full bg-neutral-900 text-sm text-white pl-10 pr-4 py-3 rounded-xl border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
+                className="w-full bg-neutral-900 text-sm text-white pl-10 pr-11 py-3 rounded-xl border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
               />
               <HiOutlineLockClosed className="absolute left-3.5 top-3.5 text-neutral-500 text-lg" />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-3.5 text-neutral-400 hover:text-white transition-colors focus:outline-none"
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <HiOutlineEyeOff className="text-lg" />
+                ) : (
+                  <HiOutlineEye className="text-lg" />
+                )}
+              </button>
             </div>
           </div>
 

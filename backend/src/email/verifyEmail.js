@@ -1,24 +1,56 @@
-import nodemailer from "nodemailer";
 import dotenv from "dotenv/config";
 
-// Mail Transporter
+/**
+ * Helper to send email via Brevo REST API (HTTPS Port 443 - 100% Cloud / Render compatible)
+ */
+const sendBrevoEmail = async ({ to, subject, text, html }) => {
+    try {
+        const apiKey = process.env.BREVO_API_KEY;
+        const senderEmail = process.env.EMAIL;
+
+        if (!apiKey) {
+            console.warn("⚠️ BREVO_API_KEY not found in environment variables. Email will not be sent.");
+            return null;
+        }
+
+        const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+            method: "POST",
+            headers: {
+                "accept": "application/json",
+                "api-key": apiKey,
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({
+                sender: {
+                    name: "Nuvora Store",
+                    email: senderEmail,
+                },
+                to: [{ email: to }],
+                subject: subject,
+                textContent: text,
+                htmlContent: html,
+            }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || "Failed to send email via Brevo API");
+        }
+
+        console.log("Email sent successfully via Brevo to:", to);
+        return data;
+    } catch (err) {
+        console.error("Error sending email:", err.message);
+        return null;
+    }
+};
+
+// Verify Account Email
 export const verifyEmail = async (token, email) => {
-    const cleanPass = process.env.PASS ? process.env.PASS.replace(/\s+/g, '') : '';
-
-    const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.EMAIL,
-            pass: cleanPass,
-        },
-    });
-
-    const verificationUrl = `http://localhost:5173/verify-email?token=${token}`;
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const verificationUrl = `${clientUrl}/verify-email?token=${token}`;
 
     const mailConfigurations = {
-        from: `"Nuvora Store" <${process.env.EMAIL}>`,
         to: email,
         subject: "Verify Your Email - Nuvora Store",
         text: `Please verify your email using this link: ${verificationUrl}`,
@@ -41,35 +73,15 @@ export const verifyEmail = async (token, email) => {
         `,
     };
 
-    try {
-        const info = await transporter.sendMail(mailConfigurations);
-        console.log("Mail sent successfully to:", email);
-        console.log("MessageId:", info.messageId);
-        return info;
-    } catch (err) {
-        console.error("Error sending email:", err.message);
-        return null;
-    }
+    return await sendBrevoEmail(mailConfigurations);
 };
 
-// Reset Password Mail Transporter
+// Reset Password Email
 export const sendResetPasswordEmail = async (token, email) => {
-    const cleanPass = process.env.PASS ? process.env.PASS.replace(/\s+/g, '') : '';
-
-    const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.EMAIL,
-            pass: cleanPass,
-        },
-    });
-
-    const resetUrl = `http://localhost:5173/reset-password?token=${token}`;
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const resetUrl = `${clientUrl}/reset-password?token=${token}`;
 
     const mailConfigurations = {
-        from: `"Nuvora Store" <${process.env.EMAIL}>`,
         to: email,
         subject: "Reset Your Password - Nuvora Store",
         text: `Reset your password using this link: ${resetUrl}`,
@@ -93,12 +105,5 @@ export const sendResetPasswordEmail = async (token, email) => {
         `,
     };
 
-    try {
-        const info = await transporter.sendMail(mailConfigurations);
-        console.log("Reset Mail sent successfully to:", email);
-        return info;
-    } catch (err) {
-        console.error("Error sending reset email:", err.message);
-        return null;
-    }
+    return await sendBrevoEmail(mailConfigurations);
 };

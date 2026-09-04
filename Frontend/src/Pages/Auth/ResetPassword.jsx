@@ -3,7 +3,13 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { resetPassword } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
-import { HiOutlineLockClosed, HiOutlineKey, HiOutlineCheckCircle } from "react-icons/hi";
+import {
+  HiOutlineLockClosed,
+  HiOutlineKey,
+  HiOutlineCheckCircle,
+  HiOutlineEye,
+  HiOutlineEyeOff,
+} from "react-icons/hi";
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -11,6 +17,8 @@ const ResetPassword = () => {
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -99,14 +107,26 @@ const ResetPassword = () => {
               </label>
               <div className="relative">
                 <input
-                  type="password"
+                  type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   placeholder="Minimum 6 characters"
-                  className="w-full bg-neutral-900 text-sm text-white pl-10 pr-4 py-3 rounded-xl border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
+                  className="w-full bg-neutral-900 text-sm text-white pl-10 pr-11 py-3 rounded-xl border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
                 />
                 <HiOutlineLockClosed className="absolute left-3.5 top-3.5 text-neutral-500 text-lg" />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3.5 top-3.5 text-neutral-400 hover:text-white transition-colors focus:outline-none"
+                  tabIndex={-1}
+                >
+                  {showNewPassword ? (
+                    <HiOutlineEyeOff className="text-lg" />
+                  ) : (
+                    <HiOutlineEye className="text-lg" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -116,14 +136,26 @@ const ResetPassword = () => {
               </label>
               <div className="relative">
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   placeholder="Repeat new password"
-                  className="w-full bg-neutral-900 text-sm text-white pl-10 pr-4 py-3 rounded-xl border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
+                  className="w-full bg-neutral-900 text-sm text-white pl-10 pr-11 py-3 rounded-xl border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
                 />
                 <HiOutlineKey className="absolute left-3.5 top-3.5 text-neutral-500 text-lg" />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3.5 top-3.5 text-neutral-400 hover:text-white transition-colors focus:outline-none"
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? (
+                    <HiOutlineEyeOff className="text-lg" />
+                  ) : (
+                    <HiOutlineEye className="text-lg" />
+                  )}
+                </button>
               </div>
             </div>
 
