@@ -6,6 +6,7 @@ import { fetchCart } from "../../redux/slices/cartSlice";
 import OrderSummary from "../../Components/Cart/OrderSummary";
 import Loader from "../../Components/Common/Loader";
 import toast from "react-hot-toast";
+import api from "../../api/axiosInstance";
 import { HiOutlineCash, HiOutlineCreditCard, HiOutlineLocationMarker } from "react-icons/hi";
 
 const CheckOut = () => {
@@ -21,6 +22,7 @@ const CheckOut = () => {
   }, [dispatch]);
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [isPayingRazorpay, setIsPayingRazorpay] = useState(false);
   const [addressData, setAddressData] = useState({
     street: user?.address || "",
     city: "",
@@ -37,6 +39,7 @@ const CheckOut = () => {
 
   const discount = subtotal > 3000 ? 500 : 0;
   const shipping = subtotal > 1999 || subtotal === 0 ? 0 : 150;
+  const finalTotal = subtotal - discount + shipping;
 
   const handleInputChange = (e) => {
     setAddressData((prev) => ({
@@ -46,50 +49,92 @@ const CheckOut = () => {
   };
 
   const handleConfirmOrder = async () => {
-    if (cartItems.length === 0) {
-      toast.error("Your cart is empty");
-      navigate("/shop");
-      return;
-    }
-
-    if (
-      !addressData.street.trim() ||
-      !addressData.city.trim() ||
-      !addressData.state.trim() ||
-      !addressData.pinCode.trim() ||
-      !addressData.phone.trim()
-    ) {
-      toast.error("Please fill in your complete delivery address & phone number");
-      return;
+    // 1. Validation
+    if (cartItems.length === 0) return toast.error("Cart is empty");
+    if (!addressData.street.trim() || !addressData.phone.trim()) {
+      return toast.error("Please enter complete delivery address and phone number");
     }
 
     const fullAddress = `${addressData.street.trim()}, ${addressData.city.trim()}, ${addressData.state.trim()} - ${addressData.pinCode.trim()} (Phone: ${addressData.phone.trim()})`;
 
-    try {
-      // Place orders for items in cart
-      for (const item of cartItems) {
-        const prodId = item.productId?._id || item.productId;
-        await dispatch(
-          placeOrder({
-            productId: prodId,
-            quantity: item.quantity || 1,
-            selectedColor: item.selectedColor || "",
-            selectedSize: item.selectedSize || "",
-            cartItemId: item._id,
-            address: fullAddress,
-            paymentMethod: paymentMethod,
-          })
-        ).unwrap();
+    // 2. Agar COD hai
+    if (paymentMethod === "COD") {
+      try {
+        for (const item of cartItems) {
+          const prodId = item.productId?._id || item.productId;
+          await dispatch(
+            placeOrder({
+              productId: prodId,
+              quantity: item.quantity || 1,
+              selectedColor: item.selectedColor || "",
+              selectedSize: item.selectedSize || "",
+              cartItemId: item._id,
+              address: fullAddress,
+              paymentMethod: "COD",
+            })
+          ).unwrap();
+        }
+        toast.success("Order placed with Cash on Delivery!");
+        dispatch(fetchCart());
+        navigate("/my-orders");
+      } catch (err) {
+        toast.error(typeof err === "string" ? err : "Failed to place order. Please check item stock.");
       }
+      return;
+    }
 
-      toast.success(
-        paymentMethod === "COD"
-          ? "Order placed successfully with Cash on Delivery!"
-          : "Order placed successfully! Online payment confirmed."
-      );
-      navigate("/my-orders");
-    } catch (err) {
-      toast.error(typeof err === "string" ? err : "Failed to place order. Please check item stock.");
+    // 3. Agar Razorpay hai
+    try {
+      setIsPayingRazorpay(true);
+
+      // Step A: Backend se order create karwao
+      const { data } = await api.post("/order/razorpay/create-order", {
+        amount: finalTotal,
+      });
+
+      // Step B: Razorpay Popup Open karo
+      const razor = new window.Razorpay({
+        key: data.keyId,
+        amount: data.amount,
+        currency: data.currency,
+        name: "NUVORA Studio",
+        description: "Curated Minimalist Essentials",
+        order_id: data.orderId,
+        handler: async (response) => {
+          // Step C: Payment verify karke order place karo
+          try {
+            await api.post("/order/razorpay/verify-payment", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              cartItems: cartItems,
+              address: fullAddress,
+            });
+
+            toast.success("Payment Successful! Order Placed 🎉");
+            dispatch(fetchCart());
+            navigate("/my-orders");
+          } catch (verErr) {
+            toast.error(verErr.response?.data?.message || "Payment verification failed.");
+          } finally {
+            setIsPayingRazorpay(false);
+          }
+        },
+        prefill: {
+          name: user?.userName || "",
+          email: user?.email || "",
+          contact: addressData.phone || "",
+        },
+        theme: { color: "#000000" },
+        modal: {
+          ondismiss: () => setIsPayingRazorpay(false),
+        },
+      });
+
+      razor.open();
+    } catch (error) {
+      setIsPayingRazorpay(false);
+      toast.error(error.response?.data?.message || "Payment failed. Please try again.");
     }
   };
 
@@ -300,7 +345,13 @@ const CheckOut = () => {
             subtotal={subtotal}
             discount={discount}
             shipping={shipping}
-            buttonText={isPlacingOrder ? "Placing Order..." : "Confirm & Place Order"}
+            buttonText={
+              isPlacingOrder || isPayingRazorpay
+                ? "Processing..."
+                : paymentMethod === "Razorpay"
+                ? "Pay with Razorpay"
+                : "Confirm & Place Order"
+            }
             onButtonClick={handleConfirmOrder}
           />
         </div>

@@ -1,6 +1,8 @@
 import orderSchema from "../models/orderSchema.js";
 import productSchema from "../models/productSchema.js";
 import cartSchema from "../models/cartSchema.js";
+import Razorpay from "razorpay";
+import crypto from "crypto";
 
 // 1. Place Order (Buyer)
 export const placeOrder = async (req, res) => {
@@ -237,6 +239,135 @@ export const cancelOrder = async (req, res) => {
         });
 
     } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+
+// 7. Create Razorpay Order
+export const createRazorPayOrder = async (req, res) => {
+    try {
+        const { amount } = req.body;
+
+        if (!amount || Number(amount) <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Valid amount is required"
+            });
+        }
+
+        const razorpayInstance = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET
+        });
+
+        const options = {
+            amount: Math.round(Number(amount) * 100), // paise me convert karna hai (₹1 = 100 paise)
+            currency: "INR",
+            receipt: `receipt_${Date.now()}`,
+        };
+
+        const razorpayOrder = await razorpayInstance.orders.create(options);
+
+        return res.status(200).json({
+            success: true,
+            orderId: razorpayOrder.id,
+            amount: razorpayOrder.amount,
+            currency: razorpayOrder.currency,
+            keyId: process.env.RAZORPAY_KEY_ID,
+        });
+    } catch (error) {
+        console.error("Razorpay order creation error:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// 8. Verify Razorpay Payment & Place Orders
+export const verifyRazorpayPayment = async (req, res) => {
+    try {
+        const {
+            razorpay_order_id,
+            razorpay_payment_id,
+            razorpay_signature,
+            cartItems,
+            address
+        } = req.body;
+
+        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing Razorpay payment verification parameters"
+            });
+        }
+
+        // 1. Signature Verification
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .update(body.toString())
+            .digest("hex");
+
+        if (expectedSignature !== razorpay_signature) {
+            return res.status(400).json({
+                success: false,
+                message: "Payment verification failed: Invalid Signature"
+            });
+        }
+
+        // 2. Signature valid hai, ab orders create karo
+        const createdOrders = [];
+        const items = Array.isArray(cartItems) ? cartItems : [];
+
+        for (const item of items) {
+            const prodId = item.productId?._id || item.productId || item.prodId?._id || item.prodId;
+            const product = await productSchema.findById(prodId);
+
+            if (!product) continue;
+
+            const qty = Number(item.quantity) || 1;
+            const pricePerUnit = product.discountPrice > 0 ? product.discountPrice : product.price;
+            const totalPrice = pricePerUnit * qty;
+
+            const order = await orderSchema.create({
+                buyerId: req.userId,
+                productId: prodId,
+                quantity: qty,
+                selectedColor: item.selectedColor || "",
+                selectedSize: item.selectedSize || "",
+                totalPrice,
+                address: address || "",
+                paymentMethod: "Razorpay",
+                paymentStatus: "Completed",
+                razorpayOrderId: razorpay_order_id,
+                razorpayPaymentId: razorpay_payment_id,
+                orderStatus: "Placed"
+            });
+
+            // Stock kam karo
+            product.stock = Math.max(0, product.stock - qty);
+            await product.save();
+
+            // Cart se item hatao
+            if (item._id) {
+                await cartSchema.findByIdAndDelete(item._id);
+            }
+
+            createdOrders.push(order);
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Payment verified & order placed successfully!",
+            orders: createdOrders
+        });
+    } catch (error) {
+        console.error("Payment verification error:", error.message);
         return res.status(500).json({
             success: false,
             message: error.message
