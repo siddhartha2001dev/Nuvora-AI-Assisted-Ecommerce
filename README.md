@@ -15,6 +15,7 @@
 > **NUVORA** is a sleek, monochromatic Direct-to-Consumer (D2C) luxury e-commerce platform built on a clean **Single-Vendor, Multi-Buyer** architecture. Powered by React 19, Redux Toolkit, Node.js Express 5, MongoDB Atlas, Cloudinary CDN, **Brevo HTTPS Email Engine**, and the **Google Gemini 1.5 Flash AI** insights summarizer.
 
 🔗 **Live Application URL**: [https://nuvora-ekart.vercel.app/](https://nuvora-ekart.vercel.app/)  
+🛍️ **Product Catalogue / Shop**: [https://nuvora-ekart.vercel.app/shop](https://nuvora-ekart.vercel.app/shop)  
 ⚡ **Production Backend API**: [https://nuvora-ai-assisted-ecommerce.onrender.com/](https://nuvora-ai-assisted-ecommerce.onrender.com/)
 
 ---
@@ -194,8 +195,9 @@ nuvora-fs/
 ## 🌐 Production Deployment Guide
 
 ### Live Deployment Links
-- **Frontend (Vercel)**: [https://nuvora-ekart.vercel.app/](https://nuvora-ekart.vercel.app/)
-- **Backend (Render)**: [https://nuvora-ai-assisted-ecommerce.onrender.com/](https://nuvora-ai-assisted-ecommerce.onrender.com/)
+- **Frontend Storefront (Vercel)**: [https://nuvora-ekart.vercel.app/](https://nuvora-ekart.vercel.app/)
+- **Live Shop / Products (Vercel)**: [https://nuvora-ekart.vercel.app/shop](https://nuvora-ekart.vercel.app/shop)
+- **Backend API (Render)**: [https://nuvora-ai-assisted-ecommerce.onrender.com/](https://nuvora-ai-assisted-ecommerce.onrender.com/)
 
 ### Deploy Backend to Render
 1. Create a new **Web Service** on [Render](https://render.com) connected to your GitHub repository.
