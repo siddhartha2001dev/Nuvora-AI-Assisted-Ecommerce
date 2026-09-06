@@ -2,6 +2,7 @@ import productSchema from "../models/productSchema.js";
 import cloudinary from "../config/cloudinary.js";
 import dotenv from "dotenv/config";
 import reviewSchema from "../models/reviewSchema.js";
+import { notifySubscribersNewProduct } from "../email/verifyEmail.js";
 
 // 1. Create Product (Seller only)
 export const createProduct = async (req, res) => {
@@ -80,6 +81,11 @@ export const createProduct = async (req, res) => {
             brand: brand || "",
             isAvailable: isAvailable !== undefined ? Boolean(isAvailable) : true
         });
+
+        // Notify subscribers of new product drop (non-blocking)
+        notifySubscribersNewProduct(newProduct, req.headers.origin).catch((err) =>
+            console.error("Subscribers alert error:", err.message)
+        );
 
         return res.status(201).json({
             success: true,

@@ -1,7 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import api from "../../api/axiosInstance";
 
 const Footer = () => {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    const cleanEmail = email.trim();
+    if (!cleanEmail) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await api.post("/newsletter/subscribe", { email: cleanEmail });
+      toast.success(res.data.message || "Welcome to Nuvora!");
+      setEmail("");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to subscribe. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <footer
       id="app-footer"
@@ -94,19 +119,23 @@ const Footer = () => {
             <p className="text-sm text-neutral-400">
               Subscribe to receive exclusive collection drops and minimalist editorial insights.
             </p>
-            <div className="flex space-x-2">
+            <form onSubmit={handleSubscribe} className="flex space-x-2">
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter email address"
+                required
                 className="w-full bg-neutral-900 text-sm text-white px-3.5 py-2.5 rounded-lg border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
               />
               <button
-                type="button"
-                className="bg-white text-black text-xs uppercase tracking-wider font-bold px-4 py-2.5 rounded-lg hover:bg-neutral-200 transition-colors shrink-0 cursor-pointer"
+                type="submit"
+                disabled={loading}
+                className="bg-white text-black text-xs uppercase tracking-wider font-bold px-4 py-2.5 rounded-lg hover:bg-neutral-200 transition-colors shrink-0 cursor-pointer disabled:opacity-60"
               >
-                Join
+                {loading ? "Joining..." : "Join"}
               </button>
-            </div>
+            </form>
           </div>
         </div>
 

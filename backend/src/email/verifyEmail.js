@@ -1,4 +1,5 @@
 import dotenv from "dotenv/config";
+import subscriberSchema from "../models/subscriberSchema.js";
 
 /**
  * Helper to send email via Brevo REST API (HTTPS Port 443 - 100% Cloud / Render compatible)
@@ -134,4 +135,90 @@ export const sendResetPasswordEmail = async (token, email, clientOrigin) => {
     };
 
     return await sendBrevoEmail(mailConfigurations);
+};
+
+// Newsletter Welcome Email
+export const sendNewsletterWelcomeEmail = async (email, clientOrigin) => {
+    const clientUrl = getClientUrl(clientOrigin);
+    const shopUrl = `${clientUrl}/shop`;
+
+    const mailConfigurations = {
+        to: email,
+        subject: "Welcome to NUVORA — Your 10% Welcome Gift 🎁",
+        text: `Welcome to Nuvora! Use coupon code NUVORA10 for 10% off your first order at ${shopUrl}`,
+        html: `
+            <div style="font-family: Arial, sans-serif; padding: 25px; max-width: 550px; margin: auto; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: #000000; margin: 0; font-size: 24px; letter-spacing: 2px;">NUVORA STUDIO</h2>
+                    <p style="color: #64748b; font-size: 14px; margin-top: 5px;">Exclusive Drops & Minimalist Editorial Insights</p>
+                </div>
+                <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 20px 0;" />
+                <p style="color: #334155; font-size: 15px; line-height: 1.5;">Hello,</p>
+                <p style="color: #334155; font-size: 15px; line-height: 1.5;">Thank you for subscribing to stay in the loop! You are now part of our private list to receive early access to new collection drops and secret archival sales.</p>
+                <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 16px; text-align: center; margin: 24px 0;">
+                    <p style="margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Your VIP Welcome Code</p>
+                    <h3 style="margin: 8px 0 0 0; font-size: 22px; color: #4f46e5; letter-spacing: 2px; font-family: monospace;">NUVORA10</h3>
+                    <p style="margin: 6px 0 0 0; font-size: 12px; color: #94a3b8;">Enjoy 10% off on your first handcrafted order</p>
+                </div>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${shopUrl}" style="display: inline-block; padding: 14px 28px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 15px;">Explore The Collection</a>
+                </div>
+                <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 20px 0;" />
+                <p style="font-size: 11px; color: #cbd5e1; text-align: center;">© Nuvora Studio. All rights reserved.</p>
+            </div>
+        `,
+    };
+
+    return await sendBrevoEmail(mailConfigurations);
+};
+
+// Notify all subscribers when a new product is added
+export const notifySubscribersNewProduct = async (product, clientOrigin) => {
+    try {
+        const subscribers = await subscriberSchema.find({}, "email");
+        if (!subscribers || subscribers.length === 0) return;
+
+        const clientUrl = getClientUrl(clientOrigin);
+        const productUrl = `${clientUrl}/product/${product._id}`;
+        const productImage = Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : "";
+        const price = product.discountPrice > 0 ? product.discountPrice : product.price;
+
+        const subject = `✨ New Arrival Drop: ${product.title} is now live on Nuvora!`;
+        const html = `
+            <div style="font-family: Arial, sans-serif; padding: 25px; max-width: 550px; margin: auto; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: #000000; margin: 0; font-size: 24px; letter-spacing: 2px;">NUVORA STUDIO</h2>
+                    <p style="color: #64748b; font-size: 13px; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">Fresh Arrival Alert</p>
+                </div>
+                <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 20px 0;" />
+                <p style="color: #334155; font-size: 15px; line-height: 1.5;">Hello,</p>
+                <p style="color: #334155; font-size: 15px; line-height: 1.5;">A brand new handcrafted piece has just landed in our catalog: <strong>${product.title}</strong>.</p>
+                
+                ${productImage ? `<div style="text-align: center; margin: 20px 0;"><img src="${productImage}" alt="${product.title}" style="max-width: 100%; max-height: 280px; object-fit: cover; border-radius: 12px;" /></div>` : ""}
+
+                <div style="background-color: #f8fafc; border-radius: 12px; padding: 15px; margin: 20px 0; text-align: center;">
+                    <p style="margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Category: ${product.category || "General"}</p>
+                    <h3 style="margin: 6px 0; font-size: 22px; color: #000000; font-family: monospace;">₹${Number(price).toLocaleString()}</h3>
+                </div>
+
+                <div style="text-align: center; margin: 25px 0;">
+                    <a href="${productUrl}" style="display: inline-block; padding: 14px 28px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 15px;">View Piece</a>
+                </div>
+                <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 20px 0;" />
+                <p style="font-size: 11px; color: #94a3b8; text-align: center;">You received this alert because you subscribed to Stay In The Loop at Nuvora.</p>
+            </div>
+        `;
+
+        // Send to subscribers asynchronously
+        for (const sub of subscribers) {
+            sendBrevoEmail({
+                to: sub.email,
+                subject,
+                text: `New Product Arrival: ${product.title} - View at ${productUrl}`,
+                html,
+            }).catch((e) => console.error(`Error emailing subscriber ${sub.email}:`, e.message));
+        }
+    } catch (err) {
+        console.error("Error notifying subscribers:", err.message);
+    }
 };
