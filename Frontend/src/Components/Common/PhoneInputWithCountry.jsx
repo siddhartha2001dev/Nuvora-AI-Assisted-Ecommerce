@@ -193,7 +193,7 @@ const PhoneInputWithCountry = ({
             className="text-base leading-none country-flag no-invert inline-block select-none"
             data-no-invert
             data-flag
-            style={!isDarkMode ? { filter: "invert(1) hue-rotate(180deg)" } : undefined}
+            style={!isDarkMode ? { filter: "invert(1) hue-rotate(180deg)" } : { filter: "none" }}
           >
             {selectedCountry.flag}
           </span>
@@ -264,7 +264,7 @@ const PhoneInputWithCountry = ({
                         className="text-base shrink-0 country-flag no-invert inline-block select-none"
                         data-no-invert
                         data-flag
-                        style={!isDarkMode ? { filter: "invert(1) hue-rotate(180deg)" } : undefined}
+                        style={!isDarkMode ? { filter: "invert(1) hue-rotate(180deg)" } : { filter: "none" }}
                       >
                         {c.flag}
                       </span>

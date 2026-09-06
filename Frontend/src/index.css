@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Country Flag & Emoji Protection: Default Natural Colors in Dark Mode */
+.country-flag,
+[data-flag] {
+  display: inline-block;
+  filter: none;
+}
+
+/* Invert flag ONLY when html root element is inverted in Light Mode */
+html[style*="invert"] .country-flag,
+html[style*="invert"] [data-flag] {
+  filter: invert(1) hue-rotate(180deg) !important;
+}
