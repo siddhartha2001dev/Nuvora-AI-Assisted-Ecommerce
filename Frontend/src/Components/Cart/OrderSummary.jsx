@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/axiosInstance";
 import toast from "react-hot-toast";
@@ -8,6 +8,7 @@ import {
   HiOutlineTag,
   HiOutlineX,
   HiOutlineCheck,
+  HiOutlineChevronDown,
 } from "react-icons/hi";
 
 const OrderSummary = ({
@@ -24,6 +25,8 @@ const OrderSummary = ({
 }) => {
   const [couponInput, setCouponInput] = useState("");
   const [isValidating, setIsValidating] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [showAvailableDropdown, setShowAvailableDropdown] = useState(false);
 
   // Coupon discount calculation
   const couponDiscount = appliedCoupon?.discountAmount || 0;
@@ -32,11 +35,24 @@ const OrderSummary = ({
   // Final total calculation
   const total = Math.max(0, subtotal + shipping - totalDiscount);
 
-  // Handle coupon apply action
-  const handleApplyCoupon = async (e) => {
-    e.preventDefault();
-    const codeToApply = couponInput.trim().toUpperCase();
+  // Fetch active coupons created by Admin for buyer convenience
+  useEffect(() => {
+    if (!allowCoupon) return;
+    const fetchAvailable = async () => {
+      try {
+        const { data } = await api.get("/coupon/available");
+        if (data?.success) {
+          setAvailableCoupons(data.coupons || []);
+        }
+      } catch (err) {
+        console.warn("Could not load available coupons:", err.message);
+      }
+    };
+    fetchAvailable();
+  }, [allowCoupon]);
 
+  // Execute coupon validation against backend
+  const executeCouponValidation = async (codeToApply) => {
     if (!codeToApply) {
       toast.error("Please enter a coupon code");
       return;
@@ -60,6 +76,7 @@ const OrderSummary = ({
           onCouponApply(data.coupon);
         }
         setCouponInput("");
+        setShowAvailableDropdown(false);
       } else {
         toast.error(data?.message || "Invalid coupon code");
       }
@@ -71,6 +88,15 @@ const OrderSummary = ({
     } finally {
       setIsValidating(false);
     }
+  };
+
+  const handleApplyCoupon = (e) => {
+    e.preventDefault();
+    executeCouponValidation(couponInput.trim().toUpperCase());
+  };
+
+  const handleSelectCouponFromList = (code) => {
+    executeCouponValidation(code.trim().toUpperCase());
   };
 
   return (
@@ -141,6 +167,95 @@ const OrderSummary = ({
                 {isValidating ? "..." : "Apply"}
               </button>
             </form>
+          )}
+
+          {/* Available Coupons Dropdown List */}
+          {availableCoupons.length > 0 && (
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setShowAvailableDropdown((prev) => !prev)}
+                className="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-neutral-900/90 border border-neutral-800/90 hover:border-neutral-700 text-xs text-neutral-300 hover:text-white transition-all cursor-pointer group"
+              >
+                <span className="flex items-center space-x-1.5 font-medium">
+                  <span className="text-amber-400 text-xs">✨</span>
+                  <span>Available Coupons ({availableCoupons.length})</span>
+                </span>
+                <HiOutlineChevronDown
+                  className={`text-neutral-400 group-hover:text-white transition-transform duration-200 ${
+                    showAvailableDropdown ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {showAvailableDropdown && (
+                <div className="mt-2 space-y-2 max-h-56 overflow-y-auto pr-1 animate-in fade-in slide-in-from-top-1 duration-150 custom-scrollbar">
+                  {availableCoupons.map((c) => {
+                    const isCurrent = appliedCoupon?.code === c.code;
+                    const meetsMin = !c.minPurchaseAmount || subtotal >= c.minPurchaseAmount;
+
+                    return (
+                      <div
+                        key={c.code}
+                        className={`p-2.5 rounded-xl border transition-all text-xs flex items-center justify-between gap-2 ${
+                          isCurrent
+                            ? "bg-emerald-500/10 border-emerald-500/40"
+                            : "bg-neutral-950/90 border-neutral-800/90 hover:border-neutral-700"
+                        }`}
+                      >
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          <div className="flex items-center space-x-1.5">
+                            <span className="font-mono font-bold text-white uppercase tracking-wider">
+                              {c.code}
+                            </span>
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
+                              {c.discountType === "percentage"
+                                ? `${c.discountValue}% OFF`
+                                : `₹${c.discountValue} OFF`}
+                            </span>
+                          </div>
+                          {c.description && (
+                            <p className="text-[10px] text-neutral-400 truncate">
+                              {c.description}
+                            </p>
+                          )}
+                          <p className="text-[10px] text-neutral-500">
+                            {c.minPurchaseAmount > 0
+                              ? `Min order: ₹${c.minPurchaseAmount.toLocaleString()}`
+                              : "No minimum order requirement"}
+                          </p>
+                        </div>
+
+                        {isCurrent ? (
+                          <span className="text-[11px] font-semibold text-emerald-400 flex items-center space-x-1 shrink-0 px-2 py-1">
+                            <HiOutlineCheck />
+                            <span>Applied</span>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={isValidating || !meetsMin}
+                            onClick={() => handleSelectCouponFromList(c.code)}
+                            className={`px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-colors shrink-0 ${
+                              meetsMin
+                                ? "bg-white text-black hover:bg-neutral-200 shadow-sm cursor-pointer"
+                                : "bg-neutral-900 text-neutral-500 border border-neutral-800 cursor-not-allowed"
+                            }`}
+                            title={
+                              meetsMin
+                                ? `Apply ${c.code}`
+                                : `Requires minimum order of ₹${c.minPurchaseAmount.toLocaleString()}`
+                            }
+                          >
+                            Apply
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}

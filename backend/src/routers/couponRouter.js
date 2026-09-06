@@ -1,6 +1,7 @@
 import express from "express";
 import {
   validateCoupon,
+  getAvailableCoupons,
   createCoupon,
   getAllCoupons,
   toggleCouponStatus,
@@ -11,8 +12,9 @@ import { isAdmin } from "../middlewares/isAdmin.js";
 
 const couponRouter = express.Router();
 
-// 1. Public / Buyer route to validate and calculate coupon discount
+// 1. Public / Buyer routes
 couponRouter.post("/validate", validateCoupon);
+couponRouter.get("/available", getAvailableCoupons);
 
 // 2. Admin / Seller protected routes to manage custom coupons
 couponRouter.post("/create", hashToken, isAdmin, createCoupon);

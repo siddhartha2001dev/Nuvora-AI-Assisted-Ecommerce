@@ -244,3 +244,49 @@ export const deleteCoupon = async (req, res) => {
     });
   }
 };
+
+/**
+ * 6. Get Available Active Coupons for Buyers (Public)
+ * Returns only active and non-expired coupons for customer selection
+ */
+export const getAvailableCoupons = async (req, res) => {
+  try {
+    const now = new Date();
+
+    // Check if any coupon exists, if none, seed default NUVORA10
+    const count = await couponSchema.countDocuments();
+    if (count === 0) {
+      await couponSchema.create({
+        code: "NUVORA10",
+        description: "Welcome 10% discount on orders over ₹500",
+        discountType: "percentage",
+        discountValue: 10,
+        minPurchaseAmount: 500,
+        maxDiscountAmount: 1000,
+        isActive: true,
+      });
+    }
+
+    const available = await couponSchema
+      .find({
+        isActive: true,
+        $or: [{ expiryDate: null }, { expiryDate: { $gt: now } }],
+      })
+      .select(
+        "code description discountType discountValue minPurchaseAmount maxDiscountAmount expiryDate"
+      )
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      coupons: available,
+    });
+  } catch (error) {
+    console.error("Get available coupons error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to load available coupons",
+    });
+  }
+};
+
