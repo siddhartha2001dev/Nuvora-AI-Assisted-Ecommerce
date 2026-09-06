@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { verifyEmailThunk } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
-import { HiOutlineCheckCircle, HiOutlineMail, HiOutlineKey } from "react-icons/hi";
+import { HiOutlineCheckCircle, HiOutlineMail, HiOutlineKey, HiOutlineArrowLeft } from "react-icons/hi";
 
 const VerifyMail = () => {
   const [searchParams] = useSearchParams();
@@ -13,7 +13,7 @@ const VerifyMail = () => {
   const [inputToken, setInputToken] = useState(tokenParam);
   const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState(2);
 
   const dispatch = useDispatch();
 
@@ -42,7 +42,7 @@ const VerifyMail = () => {
     }
   }, [tokenParam]);
 
-  // Auto-close tab when verified (industrial auth pattern e.g. Supabase, Stripe, Discord)
+  // Auto-close tab when verified
   useEffect(() => {
     if (!isVerified) return;
 
@@ -76,19 +76,21 @@ const VerifyMail = () => {
         </div>
 
         <div className="space-y-2">
-          <span className="text-xs uppercase tracking-widest font-mono text-neutral-500">
-            EMAIL CONFIRMATION
-          </span>
+          {!isVerified && (
+            <span className="text-xs uppercase tracking-widest font-mono text-neutral-500">
+              EMAIL CONFIRMATION
+            </span>
+          )}
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-['Syne',sans-serif]">
             {isVerified ? "Account Verified" : "Verify Your Email"}
           </h1>
-          <p className="text-xs text-neutral-400 leading-relaxed">
-            {isVerified
-              ? "Your email has been authenticated. You now have full access to your Nuvora account."
-              : emailParam
-              ? `We sent a verification link to ${emailParam}. Click the link or paste the token below.`
-              : "Please verify your email address to activate your account."}
-          </p>
+          {!isVerified && (
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              {emailParam
+                ? `We sent a verification link to ${emailParam}. Click the link or paste the token below.`
+                : "Please verify your email address to activate your account."}
+            </p>
+          )}
         </div>
 
         {!isVerified ? (
@@ -123,32 +125,22 @@ const VerifyMail = () => {
           </form>
         ) : (
           <div className="pt-2 space-y-4">
-            <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center space-x-2.5 text-xs text-emerald-400 font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div className="flex items-center justify-center space-x-2 text-[11px] text-neutral-500 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
               <span>
                 {countdown > 0
-                  ? `Auto-closing tab in ${countdown}s...`
-                  : "Tab closing..."}
+                  ? `Closing tab in ${countdown}s...`
+                  : "Closing tab..."}
               </span>
             </div>
 
-            <p className="text-[11px] text-neutral-500 leading-relaxed">
-              Your account is active. You can now safely close this window and return to your main tab.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => {
-                try {
-                  window.close();
-                } catch {
-                  // Browser restriction fallback
-                }
-              }}
-              className="w-full py-3 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-neutral-300 hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-colors"
+            <Link
+              to="/login"
+              className="w-full inline-flex items-center justify-center space-x-2 py-3.5 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-neutral-200 hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-colors"
             >
-              Close Tab Now
-            </button>
+              <HiOutlineArrowLeft className="text-sm" />
+              <span>Back to Login</span>
+            </Link>
           </div>
         )}
       </div>
