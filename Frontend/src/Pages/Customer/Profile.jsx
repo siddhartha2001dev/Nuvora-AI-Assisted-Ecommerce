@@ -10,11 +10,11 @@ import {
   updateUserData,
 } from "../../redux/slices/authSlice";
 import Loader from "../../Components/Common/Loader";
+import PhoneInputWithCountry from "../../Components/Common/PhoneInputWithCountry";
 import toast from "react-hot-toast";
 import {
   HiOutlineUser,
   HiOutlineMail,
-  HiOutlinePhone,
   HiOutlineLocationMarker,
   HiOutlineLogout,
   HiOutlineLockClosed,
@@ -330,17 +330,12 @@ const Profile = () => {
                 <label className="block text-xs uppercase tracking-wider font-semibold text-neutral-400">
                   Phone Number
                 </label>
-                <div className="relative">
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="+91 9876543210"
-                    className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:border-white transition-colors"
-                  />
-                  <HiOutlinePhone className="absolute left-3.5 top-3.5 text-neutral-500 text-lg" />
-                </div>
+                <PhoneInputWithCountry
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="Mobile phone number"
+                />
               </div>
 
               <div className="space-y-1.5">

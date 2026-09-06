@@ -247,6 +247,13 @@ export const cancelOrder = async (req, res) => {
 };
 
 
+// Helper to safely obtain Razorpay credentials (with fallback test keys)
+const getRazorpayCredentials = () => {
+    const key_id = (process.env.RAZORPAY_KEY_ID || "rzp_test_TYfrRVbqnoyzaT").trim();
+    const key_secret = (process.env.RAZORPAY_KEY_SECRET || "aiOrWTX5IVwP5TCrYEZbmSwl").trim();
+    return { key_id, key_secret };
+};
+
 // 7. Create Razorpay Order
 export const createRazorPayOrder = async (req, res) => {
     try {
@@ -259,9 +266,11 @@ export const createRazorPayOrder = async (req, res) => {
             });
         }
 
+        const { key_id, key_secret } = getRazorpayCredentials();
+
         const razorpayInstance = new Razorpay({
-            key_id: process.env.RAZORPAY_KEY_ID,
-            key_secret: process.env.RAZORPAY_KEY_SECRET
+            key_id,
+            key_secret
         });
 
         const options = {
@@ -277,7 +286,7 @@ export const createRazorPayOrder = async (req, res) => {
             orderId: razorpayOrder.id,
             amount: razorpayOrder.amount,
             currency: razorpayOrder.currency,
-            keyId: process.env.RAZORPAY_KEY_ID,
+            keyId: key_id,
         });
     } catch (error) {
         console.error("Razorpay order creation error:", error.message);
@@ -306,10 +315,12 @@ export const verifyRazorpayPayment = async (req, res) => {
             });
         }
 
+        const { key_secret } = getRazorpayCredentials();
+
         // 1. Signature Verification
         const body = razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSignature = crypto
-            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .createHmac("sha256", key_secret)
             .update(body.toString())
             .digest("hex");
 

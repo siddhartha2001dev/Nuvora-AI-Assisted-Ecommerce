@@ -8,6 +8,7 @@ import Loader from "../../Components/Common/Loader";
 import toast from "react-hot-toast";
 import api from "../../api/axiosInstance";
 import { HiOutlineCash, HiOutlineCreditCard, HiOutlineLocationMarker } from "react-icons/hi";
+import PhoneInputWithCountry from "../../Components/Common/PhoneInputWithCountry";
 
 const CheckOut = () => {
   const navigate = useNavigate();
@@ -87,16 +88,43 @@ const CheckOut = () => {
     try {
       setIsPayingRazorpay(true);
 
+      // Ensure Razorpay SDK is loaded
+      const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+          if (window.Razorpay) {
+            resolve(true);
+            return;
+          }
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.async = true;
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+      };
+
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded || !window.Razorpay) {
+        setIsPayingRazorpay(false);
+        return toast.error("Razorpay SDK failed to load. Please check your internet connection.");
+      }
+
       // Step A: Backend se order create karwao
       const { data } = await api.post("/order/razorpay/create-order", {
         amount: finalTotal,
       });
 
+      const razorpayKey =
+        data?.keyId ||
+        import.meta.env.VITE_RAZORPAY_KEY_ID ||
+        "rzp_test_TYfrRVbqnoyzaT";
+
       // Step B: Razorpay Popup Open karo
       const razor = new window.Razorpay({
-        key: data.keyId,
+        key: razorpayKey,
         amount: data.amount,
-        currency: data.currency,
+        currency: data.currency || "INR",
         name: "NUVORA Studio",
         description: "Curated Minimalist Essentials",
         order_id: data.orderId,
@@ -238,14 +266,12 @@ const CheckOut = () => {
                 <label className="block text-xs uppercase tracking-wider font-semibold text-neutral-400">
                   Contact Phone Number *
                 </label>
-                <input
-                  type="tel"
+                <PhoneInputWithCountry
                   name="phone"
                   value={addressData.phone}
                   onChange={handleInputChange}
                   required
                   placeholder="Mobile number for delivery coordination"
-                  className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600 font-medium font-mono"
                 />
               </div>
             </form>

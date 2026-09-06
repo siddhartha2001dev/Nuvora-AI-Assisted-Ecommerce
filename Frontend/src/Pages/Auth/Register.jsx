@@ -3,11 +3,11 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
+import PhoneInputWithCountry from "../../Components/Common/PhoneInputWithCountry";
 import {
   HiOutlineUser,
   HiOutlineMail,
   HiOutlineLockClosed,
-  HiOutlinePhone,
   HiOutlineEye,
   HiOutlineEyeOff,
 } from "react-icons/hi";
@@ -165,18 +165,12 @@ const Register = () => {
               <label className="block text-xs uppercase tracking-wider font-semibold text-neutral-400">
                 Phone Number
               </label>
-              <div className="relative">
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  autoComplete="tel"
-                  placeholder="+91 9876543210"
-                  className="w-full bg-neutral-900 text-sm text-white pl-10 pr-4 py-3 rounded-xl border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
-                />
-                <HiOutlinePhone className="absolute left-3.5 top-3.5 text-neutral-500 text-lg" />
-              </div>
+              <PhoneInputWithCountry
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Mobile phone number"
+              />
             </div>
           </div>
 
