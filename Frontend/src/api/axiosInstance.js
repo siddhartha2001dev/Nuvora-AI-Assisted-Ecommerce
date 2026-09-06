@@ -6,7 +6,7 @@ import axios from "axios";
  * to the Authorization header for protected requests.
  */
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://nuvora-backend-12hp.onrender.com",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://nuvora-ai-assisted-ecommerce.onrender.com",
 });
 
 // Request interceptor: Attach token before sending every request
