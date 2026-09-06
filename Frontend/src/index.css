@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Position React Hot Toast below the fixed Navbar */
+.nuvora-toast-container,
+div[data-rht-toaster] {
+  top: 86px !important;
+  top: max(86px, calc(76px + env(safe-area-inset-top, 0px) + 10px)) !important;
+}
+
+@media (min-width: 640px) {
+  .nuvora-toast-container,
+  div[data-rht-toaster] {
+    top: 96px !important;
+  }
+}

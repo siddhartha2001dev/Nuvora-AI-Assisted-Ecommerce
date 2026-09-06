@@ -14,6 +14,10 @@ createRoot(document.getElementById('root')).render(
         <Toaster
           position="top-center"
           reverseOrder={false}
+          containerClassName="nuvora-toast-container"
+          containerStyle={{
+            top: 86,
+          }}
           toastOptions={{
             duration: 2800,
             style: {

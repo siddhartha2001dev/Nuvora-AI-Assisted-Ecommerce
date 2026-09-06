@@ -26,7 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
     return res.status(200).json({
         success: true,
-        message: "Nuvora E-Commerce API is running smoothly 🚀"
+        message: "Nuvora E-Commerce API is running smoothly"
     });
 });
 
