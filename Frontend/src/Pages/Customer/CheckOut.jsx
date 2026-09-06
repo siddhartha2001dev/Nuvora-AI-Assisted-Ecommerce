@@ -19,6 +19,19 @@ import {
 } from "react-icons/hi";
 import PhoneInputWithCountry from "../../Components/Common/PhoneInputWithCountry";
 
+// Utility: Clean phone number format for Razorpay (removes spaces, +, country codes to ensure wallet gateways like MobiKwik get clean 10-digit number)
+const cleanPhoneForRazorpay = (rawPhone) => {
+  if (!rawPhone) return "";
+  let digits = String(rawPhone).replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) {
+    return digits.slice(2);
+  }
+  if (digits.length === 11 && digits.startsWith("0")) {
+    return digits.slice(1);
+  }
+  return digits;
+};
+
 const CheckOut = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -257,6 +270,16 @@ const CheckOut = () => {
         "rzp_test_TYfrRVbqnoyzaT";
 
       // Step B: Razorpay Popup Open karo
+      const cleanContact = cleanPhoneForRazorpay(delivery.phone || user?.phone || "");
+      const isTestMode = razorpayKey.startsWith("rzp_test_");
+
+      if (isTestMode) {
+        toast("Razorpay Test Mode: Wallet (MobiKwik) ya Bank OTP me '123456' use karein (SMS test mode me nahi aayega).", {
+          icon: "ℹ️",
+          duration: 7000,
+        });
+      }
+
       const razor = new window.Razorpay({
         key: razorpayKey,
         amount: data.amount,
@@ -288,7 +311,7 @@ const CheckOut = () => {
         prefill: {
           name: delivery.recipient || user?.userName || "",
           email: user?.email || "",
-          contact: delivery.phone || user?.phone || "",
+          contact: cleanContact,
         },
         theme: { color: "#000000" },
         modal: {
@@ -638,6 +661,19 @@ const CheckOut = () => {
                 </div>
               </div>
             </div>
+
+            {/* Test Mode Note if Razorpay selected */}
+            {paymentMethod === "Razorpay" && (
+              <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800/90 space-y-2">
+                <div className="flex items-center space-x-2 text-xs font-semibold text-amber-400">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                  <span>Razorpay Test Mode Info:</span>
+                </div>
+                <p className="text-[11px] text-neutral-400 leading-relaxed">
+                  Agar aap <strong className="text-neutral-200">Wallet (MobiKwik / Paytm)</strong> ya NetBanking select karte hain, toh test environment me phone par real SMS nahi aata. OTP screen par universal test OTP <span className="bg-neutral-800 px-1.5 py-0.5 rounded text-amber-300 font-mono font-bold">123456</span> enter karein. Real SMS OTP aane ke liye backend me Razorpay Live Mode (<code className="text-neutral-300">rzp_live_...</code>) keys configure karni hoti hain.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
