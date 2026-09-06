@@ -31,7 +31,8 @@ export const ThemeProvider = ({ children }) => {
         document.head.appendChild(dynamicStyle);
       }
       dynamicStyle.innerHTML = `
-        img, video, picture, canvas.no-invert, [data-no-invert], .no-invert, #app-footer, .country-flag, [data-flag] {
+        img, video, picture, canvas.no-invert, [data-no-invert], .no-invert, #app-footer, .country-flag, [data-flag],
+        .razorpay-container {
           filter: invert(1) hue-rotate(180deg) !important;
         }
         .country-flag, [data-flag], .no-invert, [data-no-invert] {

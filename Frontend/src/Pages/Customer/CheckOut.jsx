@@ -313,7 +313,6 @@ const CheckOut = () => {
           email: user?.email || "",
           contact: cleanContact,
         },
-        theme: { color: "#000000" },
         modal: {
           ondismiss: () => setIsPayingRazorpay(false),
         },
