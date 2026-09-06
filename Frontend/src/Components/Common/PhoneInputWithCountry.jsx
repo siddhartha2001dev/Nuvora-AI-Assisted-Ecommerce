@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { HiOutlineChevronDown, HiOutlineSearch, HiCheck } from "react-icons/hi";
+import { useTheme } from "../../context/ThemeContext";
 
 // Curated list of popular country calling codes with flags
 const COUNTRIES = [
@@ -83,6 +84,9 @@ const PhoneInputWithCountry = ({
   disabled = false,
   autoComplete = "tel",
 }) => {
+  const themeContext = useTheme();
+  const isDarkMode = themeContext?.isDarkMode ?? true;
+
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
@@ -185,7 +189,14 @@ const PhoneInputWithCountry = ({
           className="flex items-center space-x-1.5 px-3 py-3 bg-neutral-800/60 hover:bg-neutral-800 text-white border-r border-neutral-800 text-xs sm:text-sm font-medium transition-colors focus:outline-none select-none shrink-0"
           title={`${selectedCountry.name} (${selectedCountry.dialCode})`}
         >
-          <span className="text-base leading-none">{selectedCountry.flag}</span>
+          <span
+            className="text-base leading-none country-flag no-invert inline-block select-none"
+            data-no-invert
+            data-flag
+            style={!isDarkMode ? { filter: "invert(1) hue-rotate(180deg)" } : undefined}
+          >
+            {selectedCountry.flag}
+          </span>
           <span className="font-mono text-neutral-200 text-xs font-semibold">
             {selectedCountry.dialCode}
           </span>
@@ -249,7 +260,14 @@ const PhoneInputWithCountry = ({
                     }`}
                   >
                     <div className="flex items-center space-x-2.5 min-w-0 pr-2">
-                      <span className="text-base shrink-0">{c.flag}</span>
+                      <span
+                        className="text-base shrink-0 country-flag no-invert inline-block select-none"
+                        data-no-invert
+                        data-flag
+                        style={!isDarkMode ? { filter: "invert(1) hue-rotate(180deg)" } : undefined}
+                      >
+                        {c.flag}
+                      </span>
                       <span className="truncate">{c.name}</span>
                     </div>
                     <div className="flex items-center space-x-2 shrink-0">

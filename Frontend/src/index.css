@@ -20,3 +20,18 @@ button, a, input, select, textarea {
     font-size: 16px !important;
   }
 }
+
+/* Country Flag & Protected Media in Light Mode */
+.country-flag,
+.no-invert,
+[data-no-invert],
+[data-flag] {
+  display: inline-block;
+}
+
+html[style*="invert"] .country-flag,
+html[style*="invert"] .no-invert,
+html[style*="invert"] [data-no-invert],
+html[style*="invert"] [data-flag] {
+  filter: invert(1) hue-rotate(180deg) !important;
+}
