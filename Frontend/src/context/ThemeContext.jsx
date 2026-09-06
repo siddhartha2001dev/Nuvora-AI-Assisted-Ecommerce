@@ -24,14 +24,15 @@ export const ThemeProvider = ({ children }) => {
       root.style.filter = "invert(1) hue-rotate(180deg)";
       root.style.backgroundColor = "#f6f6f4";
 
-      // Protect images, videos, canvas, flags, and footer so they stay in true natural colors
+      // Protect images, videos, canvas, flags, footer, and Razorpay checkout modal so they stay in true natural colors
       if (!dynamicStyle) {
         dynamicStyle = document.createElement("style");
         dynamicStyle.id = styleId;
         document.head.appendChild(dynamicStyle);
       }
       dynamicStyle.innerHTML = `
-        img, video, picture, canvas.no-invert, [data-no-invert], .no-invert, #app-footer, .country-flag, [data-flag] {
+        img, video, picture, canvas.no-invert, [data-no-invert], .no-invert, #app-footer, .country-flag, [data-flag],
+        .razorpay-container, [class*="razorpay-container"], body > iframe[src*="razorpay"], body > iframe[name*="razorpay"], body > [class*="razorpay"] {
           filter: invert(1) hue-rotate(180deg) !important;
         }
         .country-flag, [data-flag], .no-invert, [data-no-invert] {
