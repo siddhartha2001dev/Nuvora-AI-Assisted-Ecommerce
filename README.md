@@ -1,7 +1,8 @@
-# 🌌 NUVORA — Monochrome D2C E-Commerce Platform with Google Gemini AI
+# 🌌 NUVORA — Monochrome D2C E-Commerce Platform with Google Gemini AI & Razorpay
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-nuvora--ekart.vercel.app-black?style=for-the-badge&logo=vercel)](https://nuvora-ekart.vercel.app/)
 [![Backend API](https://img.shields.io/badge/Backend%20API-Render-46E3B7?style=for-the-badge&logo=render)](https://nuvora-ai-assisted-ecommerce.onrender.com/)
+[![Razorpay](https://img.shields.io/badge/Payments-Razorpay%20Gateway-02042B?style=for-the-badge&logo=razorpay)](https://razorpay.com/)
 
 [![React](https://img.shields.io/badge/React-19-black?logo=react)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8-purple?logo=vite)](https://vitejs.dev/)
@@ -12,7 +13,7 @@
 [![Google Gemini](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-blue?logo=google)](https://ai.google.dev/)
 [![Brevo API](https://img.shields.io/badge/Email-Brevo%20REST%20API-0B996F?logo=brevo)](https://www.brevo.com/)
 
-> **NUVORA** is a sleek, monochromatic Direct-to-Consumer (D2C) luxury e-commerce platform built on a clean **Single-Vendor, Multi-Buyer** architecture. Powered by React 19, Redux Toolkit, Node.js Express 5, MongoDB Atlas, Cloudinary CDN, **Brevo HTTPS Email Engine**, and the **Google Gemini 1.5 Flash AI** insights summarizer.
+> **NUVORA** is a sleek, monochromatic Direct-to-Consumer (D2C) luxury e-commerce platform built on a clean **Single-Vendor, Multi-Buyer** architecture. Powered by React 19, Redux Toolkit, Node.js Express 5, MongoDB Atlas, Cloudinary CDN, **Razorpay Payment Gateway**, **Brevo HTTPS Email Engine**, and the **Google Gemini 1.5 Flash AI** insights summarizer.
 
 🔗 **Live Application URL**: [https://nuvora-ekart.vercel.app/](https://nuvora-ekart.vercel.app/)  
 🛍️ **Product Catalogue / Shop**: [https://nuvora-ekart.vercel.app/shop](https://nuvora-ekart.vercel.app/shop)  
@@ -28,35 +29,43 @@
 - **Fail-Safe Real-Data Fallback**: Automatic deterministic synthesis engine ensuring 100% summary uptime even if quota limits are reached.
 - **Dedicated Modal Component (`AiSummaryModal.jsx`)**: Rendered via React `createPortal` with backdrop blur, bold header parsing, and numbered bullet badges.
 
-### 🔐 2. Production-Ready Authentication & Security
+### 💳 2. Razorpay Online Payment Gateway Integration
+- **Full-Stack Checkout**: Native integration with the official Razorpay Checkout SDK supporting UPI (GPay, PhonePe, Paytm, QR), Credit/Debit Cards, NetBanking, and Wallets.
+- **Cryptographic Security**: HMAC-SHA256 signature verification in the backend prevents order tampering and ensures 100% genuine payments.
+- **Multi-Payment Selection**: Choose between **Razorpay Online** and **Cash on Delivery (COD)** with real-time UI feedback.
+- **Automated Stock Deduction**: Orders are placed atomically, product stock is decremented, and user shopping bag is emptied upon successful payment.
+
+### 📬 3. "Stay In The Loop" Newsletter & Real-Time Product Alerts
+- **Database Storage**: Captures subscribers in MongoDB with duplicate submission protection.
+- **Automated VIP Welcome Email**: Dispatches a luxury dark-mode welcome email via Brevo REST API containing a 10% discount gift code (`NUVORA10`) and collection link.
+- **New Product Drop Alerts**: Automatically sends an email alert with product image, price, and direct link to all newsletter subscribers whenever a seller/admin lists a new product.
+
+### 🔐 4. Production-Ready Authentication & Security
 - **JWT & Password Security**: Bcrypt hashed credentials and 7-day access / 30-day refresh token architecture.
 - **Brevo REST API Email Verification**: Email verification and 15-minute expiring password reset links dispatched via Brevo HTTPS REST API (Port 443) for 100% cloud & Render deployment reliability.
 - **Interactive Password Visibility Toggle**: Eye icon toggle (`HiOutlineEye` / `HiOutlineEyeOff`) across Login, Register, Reset Password, and Profile Change Password forms.
 
-### 🌊 3. 60 FPS Monochromatic 3D Dots Fabric Wave Hero
+### ⭐ 5. Verified Customer Reviews & Profiles
+- **Profile Avatar Rendering**: Displays user's uploaded Cloudinary avatar photo next to their review comments with an initials fallback.
+- **Dynamic Rating System**: Real-time calculated average ratings; shows a clean `"No reviews available"` badge when a product has zero reviews instead of fake 5 stars.
+
+### 🌊 6. 60 FPS Monochromatic 3D Dots Fabric Wave Hero
 - **HTML5 Canvas Trigonometric Simulation**: Pure mathematical 3D perspective projection (`Math.sin` + `Math.cos`) rendering a fluid, floating mesh fabric.
 - **Zero Heavy 3D Libraries**: Built directly with native `requestAnimationFrame` for buttery-smooth 60 FPS performance without Three.js overhead.
 - **Day & Night Adaptive**: Renders luminous white dots in Dark Mode and deep black dots in Light Mode.
 
-### 🎨 4. Custom Color & Size Variant Management
+### 🎨 7. Custom Color & Size Variant Management
 - **Multi-Color Selector**: Supports 7 preset monochromatic shades plus custom hex/named colors with live removable chips (`[Color ✕]`) and `Enter` key support.
 - **Size Selection**: Standard merchandise and clothing sizes (`XS`, `S`, `M`, `L`, `XL`, `XXL`, `3XL`).
 - **Cart & Order Tagging**: Selected variants persist across shopping bag, checkout breakdown, order receipts, and invoice records.
 
-### 🔍 5. Unified Catalogue Filter & Search Engine
-- **Single-Controller Query Engine (`paginateProducts`)**: Handles live regex text search, category filtering, price range constraints, and multi-level sorting (*Price: Low to High*, *High to Low*, *Top Rated*).
-- **Responsive Controls**: Sidebar filtering for desktop and expandable inline filter cards for mobile.
-
-### 📦 6. Single-Vendor Admin & Inventory Control Hub
+### 📦 8. Single-Vendor Admin & Inventory Control Hub
 - **Streamlined Store Metrics**: Real-time analytics tracking `Total Revenue (₹)`, `Orders Received`, and `Active Listings`.
-- **Instant Stock Refill Modal**: One-click inventory restocker with Additive/Set Absolute Modes without requiring full product editing.
-- **Order Fulfillment Pipeline**: Update shipping states (*Placed → Processing → Shipped → Delivered*) with customer cancel guards.
+- **Instant Stock Refill Modal**: One-click inventory restocker with Additive/Set Absolute Modes.
+- **Stock Guard UX**: Displays clean `"In Stock"` or `"Out of Stock"` badges and disables purchase buttons when stock is depleted, auto-enabling upon replenishment.
+- **Order Fulfillment Pipeline**: Update shipping states (*Placed → Shipped → Delivered → Cancelled*).
 
-### 💳 7. Flexible Order Checkout & Stock Management
-- **Multi-Payment Selection**: Seamless checkout supporting **Cash on Delivery (COD)** and **Online / Prepaid Payment**.
-- **Automated Inventory Deduction**: Atomically decrements product stock upon order placement and guards against overselling.
-
-### ☀️/🌙 8. Day & Night Monochrome Theming Engine
+### ☀️/🌙 9. Day & Night Monochrome Theming Engine
 - **Self-Contained `ThemeContext.jsx`**: Global theme inverter with media and footer preservation (`.no-invert` protection) while keeping `index.css` completely clean.
 
 ---
@@ -65,6 +74,7 @@
 
 ### **Frontend**
 - **Core**: React 19, Vite 8, HTML5 Canvas API
+- **Payments**: Razorpay Checkout SDK (`checkout.js`)
 - **Routing**: React Router DOM v7
 - **State Management**: Redux Toolkit & Async Thunks (`authSlice`, `cartSlice`, `wishlistSlice`, `orderSlice`, `productSlice`, `reviewSlice`)
 - **Styling**: Tailwind CSS
@@ -74,6 +84,7 @@
 ### **Backend**
 - **Runtime & Framework**: Node.js (ES Modules), Express.js 5
 - **Database**: MongoDB Atlas with Mongoose ODM
+- **Payments**: Official `razorpay` Node SDK & native `crypto` (HMAC SHA256)
 - **Authentication**: JWT (JSON Web Tokens), Bcrypt password hashing
 - **Media CDN**: Cloudinary SDK & Multer memory storage
 - **Email Service**: Brevo REST API (HTTPS Port 443)
@@ -113,10 +124,10 @@ nuvora-fs/
 │   ├── src/
 │   │   ├── config/                  # MongoDB & Cloudinary configurations
 │   │   ├── controllers/             # Product, User, Cart, Wishlist, Order, Review
-│   │   ├── email/                   # Brevo REST API verification & reset templates
+│   │   ├── email/                   # Brevo REST API templates & alert dispatchers
 │   │   ├── middlewares/             # JWT auth, Multer, Role guards (isAdmin)
-│   │   ├── models/                  # Mongoose schemas (User, Product, Cart, Order, Review)
-│   │   ├── routers/                 # Express API routes
+│   │   ├── models/                  # Mongoose schemas (User, Product, Cart, Order, Review, Subscriber)
+│   │   ├── routers/                 # Express API routes (including Razorpay & Newsletter)
 │   │   └── validator/               # Yup request validation schemas
 │   ├── .env.example                 # Safe environment variables template
 │   ├── server.js                    # Express app entrypoint
@@ -138,6 +149,7 @@ nuvora-fs/
 - **Cloudinary Account Credentials**
 - **Brevo API Key** (from [brevo.com](https://brevo.com))
 - **Google Gemini API Key** (from [Google AI Studio](https://aistudio.google.com/))
+- **Razorpay Key ID & Secret** (from [Razorpay Dashboard](https://dashboard.razorpay.com/))
 
 ---
 
@@ -162,6 +174,8 @@ nuvora-fs/
    EMAIL=your_brevo_verified_email@gmail.com
    BREVO_API_KEY=xkeysib-your_brevo_api_key_here
    GEMINI_API_KEY=your_gemini_api_key_here
+   RAZORPAY_KEY_ID=your_razorpay_key_id
+   RAZORPAY_KEY_SECRET=your_razorpay_key_secret
    ```
 4. Start the backend development server:
    ```bash
@@ -212,6 +226,8 @@ nuvora-fs/
    - `EMAIL`: *(Your Brevo sender email)*
    - `BREVO_API_KEY`: *(Your Brevo API Key `xkeysib-...`)*
    - `GEMINI_API_KEY`: *(Your Google Gemini API Key)*
+   - `RAZORPAY_KEY_ID`: *(Your Razorpay Key ID)*
+   - `RAZORPAY_KEY_SECRET`: *(Your Razorpay Key Secret)*
    - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
    - `CLIENT_URL`: `https://nuvora-ekart.vercel.app`
 
@@ -239,17 +255,19 @@ nuvora-fs/
 | `/product/paginate` | `GET` | Public | Unified multi-filter catalog query |
 | `/product/:id` | `GET` | Public | Fetch single product specs |
 | `/product/:id/ai-summary` | `GET` | Public | Google Gemini AI summary generated from specs & reviews |
-| `/product/add` | `POST` | Seller/Admin | Upload new product with Cloudinary images & variants |
-| `/product/refill-stock` | `PATCH` | Seller/Admin | Instant inventory restock (Additive/Absolute) |
+| `/product/create` | `POST` | Seller/Admin | Upload new product & automatically alert all newsletter subscribers |
 | `/cart` | `GET` / `POST` | Buyer | Get cart items / Add item to bag with color & size |
 | `/cart/remove/:cartItemId` | `DELETE` | Buyer | Remove product from bag |
 | `/wishlist` | `GET` / `POST` | Buyer | Get wishlist / Save product |
-| `/order/place` | `POST` | Buyer | Convert bag to order & deduct inventory stock |
+| `/order/place` | `POST` | Buyer | Place order via Cash on Delivery (COD) & deduct stock |
+| `/order/razorpay/create-order` | `POST` | Buyer | Initialize Razorpay Order ID for online payment |
+| `/order/razorpay/verify-payment` | `POST` | Buyer | Verify HMAC-SHA256 signature, place orders & clear cart |
 | `/order/my-orders` | `GET` | Buyer | Customer order history & timeline tracking |
-| `/order/seller-orders` | `GET` | Seller/Admin | Store owner order management |
-| `/order/status/:orderId` | `PUT` | Seller/Admin | Update order shipping status |
-| `/review/product/:id` | `GET` | Public | Fetch customer reviews and star ratings |
+| `/order/seller/orders` | `GET` | Seller/Admin | Store owner order management |
+| `/order/seller/status/:id` | `PUT` | Seller/Admin | Update order shipping status |
+| `/review/product/:id` | `GET` | Public | Fetch customer reviews, star ratings & user avatars |
 | `/review/add` | `POST` | Buyer | Post review & recalculate average product rating |
+| `/newsletter/subscribe` | `POST` | Public | Subscribe email, save to MongoDB & dispatch welcome 10% gift email |
 
 ---
 
