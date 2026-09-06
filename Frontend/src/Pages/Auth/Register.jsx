@@ -19,6 +19,7 @@ const Register = () => {
     email: "",
     password: "",
     phone: "",
+    gender: "",
     address: "",
   });
 
@@ -35,6 +36,7 @@ const Register = () => {
       email: "",
       password: "",
       phone: "",
+      gender: "",
       address: "",
     });
   }, [location.pathname]);
@@ -60,6 +62,7 @@ const Register = () => {
         email: formData.email,
         password: formData.password,
         phone: formData.phone,
+        gender: formData.gender,
         role: "Buyer",
         address: formData.address,
       };
@@ -171,6 +174,31 @@ const Register = () => {
                 onChange={handleChange}
                 placeholder="Mobile phone number"
               />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-xs uppercase tracking-wider font-semibold text-neutral-400">
+              Gender (Optional)
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {["Male", "Female", "Other", "Prefer not to say"].map((option) => {
+                const isSelected = formData.gender === option;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, gender: option }))}
+                    className={`py-2 px-2 rounded-xl border text-xs font-medium transition-all text-center ${
+                      isSelected
+                        ? "bg-white text-black border-white shadow-sm font-semibold"
+                        : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700"
+                    }`}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

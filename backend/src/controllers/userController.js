@@ -8,7 +8,7 @@ import cloudinary from "../config/cloudinary.js";
 // 1. Register
 export const register = async (req, res) => {
     try {
-        const { userName, email, password, phone, role, shopName, address } = req.body;
+        const { userName, email, password, phone, gender, role, shopName, address } = req.body;
 
         const existingUser = await userSchema.findOne({ email });
         if (existingUser) {
@@ -26,6 +26,7 @@ export const register = async (req, res) => {
             email,
             password: hashPassword,
             phone: phone || "",
+            gender: gender || "",
             role: role || "Buyer",
             shopName: shopName || "",
             address: address || "",
@@ -258,7 +259,7 @@ export const getProfile = async (req, res) => {
 // 6. Update User Profile
 export const updateProfile = async (req, res) => {
     try {
-        const { userName, email, phone, avatarUrl, shopName, address } = req.body;
+        const { userName, email, phone, gender, avatarUrl, shopName, address } = req.body;
 
         // If email is changing, check if another user already has this email
         if (email) {
@@ -271,9 +272,14 @@ export const updateProfile = async (req, res) => {
             }
         }
 
+        const updateData = { userName, email, phone, avatarUrl, shopName, address };
+        if (gender !== undefined) {
+            updateData.gender = gender;
+        }
+
         const updatedUser = await userSchema.findByIdAndUpdate(
             req.userId,
-            { userName, email, phone, avatarUrl, shopName, address },
+            updateData,
             { new: true, runValidators: true }
         ).select("-password");
 

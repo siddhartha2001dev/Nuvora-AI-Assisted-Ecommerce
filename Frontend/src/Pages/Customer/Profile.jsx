@@ -71,6 +71,7 @@ const Profile = () => {
     userName: "",
     email: "",
     phone: "",
+    gender: "",
     address: "",
   });
 
@@ -90,6 +91,7 @@ const Profile = () => {
         userName: user.userName || "",
         email: user.email || "",
         phone: user.phone || "",
+        gender: user.gender || "",
         address: user.address || "",
       });
     }
@@ -394,11 +396,16 @@ const Profile = () => {
             )}
           </div>
 
-          <div className="flex items-center justify-center space-x-1.5">
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             <span className="inline-flex items-center space-x-1 text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-full bg-white text-black shadow-sm">
               <HiOutlineShieldCheck className="text-xs" />
               <span>{isAdmin ? "Store Admin" : "Verified Buyer"}</span>
             </span>
+            {user?.gender && user.gender !== "Prefer not to say" && (
+              <span className="inline-flex items-center text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400">
+                {user.gender}
+              </span>
+            )}
           </div>
 
           <div className="pt-4 border-t border-neutral-800">
@@ -467,6 +474,32 @@ const Profile = () => {
                   onChange={handleChange}
                   placeholder="Mobile phone number"
                 />
+              </div>
+
+              {/* Gender Selection */}
+              <div className="space-y-2">
+                <label className="block text-xs uppercase tracking-wider font-semibold text-neutral-400">
+                  Gender
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {["Male", "Female", "Other", "Prefer not to say"].map((option) => {
+                    const isSelected = formData.gender === option;
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => setFormData((prev) => ({ ...prev, gender: option }))}
+                        className={`py-2.5 px-3 rounded-xl border text-xs font-medium transition-all text-center ${
+                          isSelected
+                            ? "bg-white text-black border-white shadow-sm font-semibold"
+                            : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {isAdmin && (

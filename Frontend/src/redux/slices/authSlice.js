@@ -276,6 +276,13 @@ const authSlice = createSlice({
       localStorage.setItem("nuvora_user", JSON.stringify(user));
     });
 
+    // Profile Update
+    builder.addCase(updateProfile.fulfilled, (state, action) => {
+      const user = action.payload.data || action.payload;
+      state.user = user;
+      localStorage.setItem("nuvora_user", JSON.stringify(user));
+    });
+
     // Logout
     builder.addCase(logoutUser.fulfilled, (state) => {
       state.user = null;

@@ -274,9 +274,9 @@ const CheckOut = () => {
       const isTestMode = razorpayKey.startsWith("rzp_test_");
 
       if (isTestMode) {
-        toast("Razorpay Test Mode: Wallet (MobiKwik) ya Bank OTP me '123456' use karein (SMS test mode me nahi aayega).", {
-          icon: "ℹ️",
-          duration: 7000,
+        toast("Sandbox Mode: Enter test OTP '123456' for simulated wallet or netbanking verification.", {
+          icon: "💳",
+          duration: 6000,
         });
       }
 
@@ -662,15 +662,15 @@ const CheckOut = () => {
               </div>
             </div>
 
-            {/* Test Mode Note if Razorpay selected */}
+            {/* Sandbox Notice if Razorpay selected */}
             {paymentMethod === "Razorpay" && (
-              <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800/90 space-y-2">
-                <div className="flex items-center space-x-2 text-xs font-semibold text-amber-400">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                  <span>Razorpay Test Mode Info:</span>
+              <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800/90 space-y-1.5">
+                <div className="flex items-center space-x-2 text-xs font-semibold text-neutral-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">Sandbox Environment Active</span>
                 </div>
                 <p className="text-[11px] text-neutral-400 leading-relaxed">
-                  Agar aap <strong className="text-neutral-200">Wallet (MobiKwik / Paytm)</strong> ya NetBanking select karte hain, toh test environment me phone par real SMS nahi aata. OTP screen par universal test OTP <span className="bg-neutral-800 px-1.5 py-0.5 rounded text-amber-300 font-mono font-bold">123456</span> enter karein. Real SMS OTP aane ke liye backend me Razorpay Live Mode (<code className="text-neutral-300">rzp_live_...</code>) keys configure karni hoti hain.
+                  For test transactions using <strong className="text-neutral-200 font-medium">Wallets (MobiKwik / Paytm)</strong> or NetBanking, enter test OTP <code className="bg-neutral-800 px-1.5 py-0.5 rounded text-neutral-100 font-mono font-bold">123456</code> to complete authentication. Real SMS dispatch is disabled in sandbox mode.
                 </p>
               </div>
             )}

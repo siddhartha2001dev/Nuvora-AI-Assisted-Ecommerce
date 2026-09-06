@@ -35,6 +35,11 @@ export const userRegisterSchema = yup.object({
         .trim()
         .optional()
         .default(""),
+    gender: yup
+        .string()
+        .oneOf(["Male", "Female", "Other", "Prefer not to say", ""], "Please select a valid gender option")
+        .optional()
+        .default(""),
     role: yup
         .string()
         .oneOf(["Buyer", "Admin"], "Role must be either 'Buyer' or 'Admin'")
