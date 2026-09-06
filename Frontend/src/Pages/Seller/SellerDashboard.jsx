@@ -21,6 +21,7 @@ import {
   HiOutlinePencilAlt,
   HiOutlineX,
   HiOutlineCheck,
+  HiOutlineTag,
 } from "react-icons/hi";
 
 const CATEGORIES = [
@@ -200,17 +201,27 @@ const SellerDashboard = () => {
               </h1>
             </div>
 
-            <Link
-              to="/seller/add-product"
-              className="inline-flex items-center justify-center space-x-2 px-5 py-3 bg-white text-black text-xs uppercase font-extrabold tracking-wider rounded-xl hover:bg-neutral-200 transition-colors shadow-lg"
-            >
-              <HiOutlinePlus className="text-base" />
-              <span>Add New Piece</span>
-            </Link>
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+              <Link
+                to="/seller/coupons"
+                className="inline-flex items-center justify-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-neutral-900 border border-neutral-700 hover:border-neutral-500 text-white text-xs uppercase font-extrabold tracking-wider rounded-xl transition-all shadow-sm"
+              >
+                <HiOutlineTag className="text-base text-amber-400" />
+                <span>Custom Coupons</span>
+              </Link>
+
+              <Link
+                to="/seller/add-product"
+                className="inline-flex items-center justify-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-white text-black text-xs uppercase font-extrabold tracking-wider rounded-xl hover:bg-neutral-200 transition-colors shadow-lg"
+              >
+                <HiOutlinePlus className="text-base" />
+                <span>Add New Piece</span>
+              </Link>
+            </div>
           </div>
 
-          {/* Metric Stats Cards (Clean 3-Card Summary) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          {/* Metric Stats Cards (Clean 4-Card Summary) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {/* Total Revenue */}
             <div className="p-4 sm:p-5 bg-[#121215] border border-neutral-800/80 rounded-2xl space-y-1.5 sm:space-y-2">
               <div className="flex items-center justify-between text-neutral-400">
@@ -246,6 +257,23 @@ const SellerDashboard = () => {
                 {lowStockCount > 0 ? `${lowStockCount} low stock` : "All in stock"}
               </span>
             </div>
+
+            {/* Custom Coupons & Offers Card */}
+            <Link
+              to="/seller/coupons"
+              className="p-4 sm:p-5 bg-[#121215] border border-neutral-800/80 hover:border-neutral-600 rounded-2xl space-y-1.5 sm:space-y-2 transition-all block group"
+            >
+              <div className="flex items-center justify-between text-neutral-400 group-hover:text-white transition-colors">
+                <span className="text-[10px] sm:text-xs uppercase tracking-wider font-semibold">Custom Coupons</span>
+                <HiOutlineTag className="text-lg sm:text-xl text-amber-400" />
+              </div>
+              <p className="text-lg sm:text-xl font-extrabold text-white font-['Syne',sans-serif]">
+                Offers & Codes
+              </p>
+              <span className="text-[9px] sm:text-[10px] text-amber-400 font-mono group-hover:underline flex items-center space-x-1">
+                <span>Manage custom coupons →</span>
+              </span>
+            </Link>
           </div>
 
           {/* Product Listings Table */}
@@ -489,16 +517,19 @@ const SellerDashboard = () => {
               {/* Description */}
               <div className="space-y-1.5">
                 <label className="block text-xs uppercase tracking-wider font-semibold text-neutral-400">
-                  Description *
+                  Detailed Description *
                 </label>
                 <textarea
-                  rows={3}
+                  rows={5}
                   value={editFormData.description}
                   onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
                   required
-                  placeholder="Describe your piece..."
-                  className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white px-4 py-2.5 rounded-xl focus:outline-none focus:border-white transition-colors"
+                  placeholder="Describe your piece (use newlines for paragraphs, - for bullet lists)..."
+                  className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white px-4 py-2.5 rounded-xl focus:outline-none focus:border-white transition-colors leading-relaxed"
                 ></textarea>
+                <p className="text-[10px] text-neutral-500 font-mono">
+                  💡 Line breaks, paragraphs, and bullet points (- or •) are automatically preserved on the product page.
+                </p>
               </div>
 
               {/* Submit Buttons */}

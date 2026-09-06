@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import api from "../../api/axiosInstance";
 import SellerSidebar from "../../Components/Seller/SellerSidebar";
 import Loader from "../../Components/Common/Loader";
@@ -10,6 +11,7 @@ import {
   HiOutlineX,
   HiOutlineCalendar,
   HiOutlineSparkles,
+  HiOutlineArrowLeft,
 } from "react-icons/hi";
 
 const SellerCoupons = () => {
@@ -143,6 +145,15 @@ const SellerCoupons = () => {
 
         {/* Coupons Main Content */}
         <div className="flex-1 space-y-6 sm:space-y-8 min-w-0">
+          {/* Breadcrumb back link */}
+          <Link
+            to="/seller/dashboard"
+            className="inline-flex items-center space-x-1.5 text-xs text-neutral-400 hover:text-white transition-colors group"
+          >
+            <HiOutlineArrowLeft className="text-sm transition-transform group-hover:-translate-x-1" />
+            <span>Back to Dashboard</span>
+          </Link>
+
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-800 pb-6">
             <div>
@@ -374,6 +385,9 @@ const SellerCoupons = () => {
                   placeholder="e.g. FESTIVE25, SUMMER500"
                   className="w-full bg-neutral-900 border border-neutral-800 text-sm text-white uppercase font-mono px-4 py-3 rounded-xl focus:outline-none focus:border-white transition-colors"
                 />
+                <p className="text-[10px] text-neutral-500 font-mono">
+                  All coupon codes are unique across your store and automatically uppercase.
+                </p>
               </div>
 
               {/* Description */}

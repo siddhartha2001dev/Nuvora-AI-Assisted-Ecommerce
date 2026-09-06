@@ -555,14 +555,17 @@ const AddProduct = () => {
                 Detailed Product Description *
               </label>
               <textarea
-                rows={4}
+                rows={6}
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
                 required
-                placeholder="Describe material, specifications, warranty, dimensions..."
-                className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white transition-colors"
+                placeholder={"Describe material, specifications, warranty, dimensions...\n\nExample:\nCrafted from 100% combed organic cotton.\n\nHighlights:\n- 240 GSM heavy-gauge fabric\n- Preshrunk & bio-washed for ultra softness\n- Relaxed oversized silhouette\n\nCare:\nMachine wash cold with like colors."}
+                className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white transition-colors leading-relaxed"
               ></textarea>
+              <p className="text-[10px] text-neutral-500 font-mono">
+                💡 Paragraphs, line breaks, and bullet points (- or •) are automatically preserved on the product page.
+              </p>
             </div>
 
             {/* Submit Buttons */}

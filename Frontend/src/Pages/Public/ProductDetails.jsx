@@ -31,6 +31,50 @@ import {
   HiOutlineCheck,
 } from "react-icons/hi";
 
+/**
+ * Render description while preserving exact admin formatting:
+ * - Double line breaks create distinct paragraphs
+ * - Single line breaks stay on their own lines (whitespace-pre-line)
+ * - Lines starting with bullet markers (-, *, •) render as clean styled bullet items
+ */
+const renderProductDescription = (rawText) => {
+  if (!rawText) return null;
+
+  // Split into paragraph blocks (separated by 2 or more newlines)
+  const blocks = String(rawText).split(/\n\s*\n/);
+
+  return (
+    <div className="space-y-3 pt-1 text-xs sm:text-sm text-neutral-300 leading-relaxed break-words">
+      {blocks.map((block, blockIdx) => {
+        const trimmedBlock = block.trim();
+        if (!trimmedBlock) return null;
+
+        const lines = trimmedBlock.split("\n").map((l) => l.trim()).filter(Boolean);
+        const isBulletList = lines.length > 0 && lines.every((line) => /^[-*•]\s+/.test(line));
+
+        if (isBulletList) {
+          return (
+            <ul key={blockIdx} className="space-y-1.5 pl-2 list-none">
+              {lines.map((item, itemIdx) => (
+                <li key={itemIdx} className="flex items-start space-x-2 text-neutral-300">
+                  <span className="text-white mt-1 select-none text-[10px] leading-none">•</span>
+                  <span className="flex-1">{item.replace(/^[-*•]\s+/, "")}</span>
+                </li>
+              ))}
+            </ul>
+          );
+        }
+
+        return (
+          <p key={blockIdx} className="whitespace-pre-line text-neutral-400">
+            {trimmedBlock}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -378,10 +422,8 @@ const ProductDetails = () => {
               )}
             </div>
 
-            {/* Description */}
-            <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed pt-1">
-              {product.description}
-            </p>
+            {/* Formatted Description (Preserving Admin Paragraphs & Bullet Lists) */}
+            {renderProductDescription(product.description)}
 
             {/* Optional Available Colors Selector */}
             {product.colors && product.colors.length > 0 && (

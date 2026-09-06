@@ -166,13 +166,14 @@ const Register = () => {
 
             <div className="space-y-1.5">
               <label className="block text-xs uppercase tracking-wider font-semibold text-neutral-400">
-                Phone Number
+                Phone Number (Optional)
               </label>
               <PhoneInputWithCountry
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="Mobile phone number"
+                required={false}
+                placeholder="Optional (e.g. 98765 43210)"
               />
             </div>
           </div>

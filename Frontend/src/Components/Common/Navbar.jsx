@@ -21,6 +21,7 @@ import {
   HiOutlineChevronDown,
   HiOutlineHome,
   HiOutlineChevronRight,
+  HiOutlineTag,
 } from "react-icons/hi";
 
 const Navbar = () => {
@@ -163,6 +164,16 @@ const Navbar = () => {
                   }`}
                 >
                   Customer Orders
+                </Link>
+                <Link
+                  to="/seller/coupons"
+                  className={`py-2 transition-all hover:text-white relative ${
+                    location.pathname === "/seller/coupons"
+                      ? "text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-white after:rounded-full"
+                      : ""
+                  }`}
+                >
+                  Coupons & Offers
                 </Link>
               </nav>
             ) : (
@@ -328,6 +339,17 @@ const Navbar = () => {
                         </Link>
 
                         <Link
+                          to="/seller/coupons"
+                          className="flex items-center justify-between px-3 py-2.5 text-xs font-semibold text-neutral-300 hover:text-white hover:bg-neutral-900 rounded-xl transition-colors"
+                        >
+                          <div className="flex items-center space-x-2.5">
+                            <HiOutlineTag className="text-base text-neutral-400" />
+                            <span>Coupons & Offers</span>
+                          </div>
+                          <HiOutlineChevronRight className="text-neutral-600 text-xs" />
+                        </Link>
+
+                        <Link
                           to="/profile"
                           className="flex items-center justify-between px-3 py-2.5 text-xs font-semibold text-neutral-300 hover:text-white hover:bg-neutral-900 rounded-xl transition-colors"
                         >
@@ -439,6 +461,17 @@ const Navbar = () => {
                 <div className="flex items-center space-x-3.5">
                   <HiOutlineClipboardList className="text-xl text-neutral-400" />
                   <span>Customer Orders</span>
+                </div>
+                <HiOutlineChevronRight className="text-neutral-600 text-base" />
+              </Link>
+
+              <Link
+                to="/seller/coupons"
+                className="flex items-center justify-between py-4 px-2.5 text-neutral-200 hover:text-white transition-colors active:bg-neutral-900/50 rounded-xl"
+              >
+                <div className="flex items-center space-x-3.5">
+                  <HiOutlineTag className="text-xl text-neutral-400" />
+                  <span>Coupons & Offers</span>
                 </div>
                 <HiOutlineChevronRight className="text-neutral-600 text-base" />
               </Link>
