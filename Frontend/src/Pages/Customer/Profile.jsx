@@ -469,22 +469,24 @@ const Profile = () => {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-xs uppercase tracking-wider font-semibold text-neutral-400">
-                  {isAdmin ? "Store Dispatch / Business Address" : "Default Delivery Address"}
-                </label>
-                <div className="relative">
-                  <textarea
-                    rows={3}
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    placeholder="Street, City, State, PIN..."
-                    className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:border-white transition-colors"
-                  />
-                  <HiOutlineLocationMarker className="absolute left-3.5 top-3.5 text-neutral-500 text-lg" />
+              {isAdmin && (
+                <div className="space-y-1.5">
+                  <label className="block text-xs uppercase tracking-wider font-semibold text-neutral-400">
+                    Store Dispatch / Business Address
+                  </label>
+                  <div className="relative">
+                    <textarea
+                      rows={3}
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      placeholder="Street, City, State, PIN..."
+                      className="w-full bg-neutral-900 border border-neutral-800 text-xs sm:text-sm text-white pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:border-white transition-colors"
+                    />
+                    <HiOutlineLocationMarker className="absolute left-3.5 top-3.5 text-neutral-500 text-lg" />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="pt-2">
                 <button
