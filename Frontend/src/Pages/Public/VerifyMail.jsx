@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { verifyEmailThunk } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
-import { HiOutlineCheckCircle, HiOutlineArrowRight, HiOutlineMail, HiOutlineKey } from "react-icons/hi";
+import { HiOutlineCheckCircle, HiOutlineMail, HiOutlineKey } from "react-icons/hi";
 
 const VerifyMail = () => {
   const [searchParams] = useSearchParams();
@@ -13,6 +13,7 @@ const VerifyMail = () => {
   const [inputToken, setInputToken] = useState(tokenParam);
   const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState(3);
 
   const dispatch = useDispatch();
 
@@ -40,6 +41,28 @@ const VerifyMail = () => {
       handleVerify(tokenParam);
     }
   }, [tokenParam]);
+
+  // Auto-close tab when verified (industrial auth pattern e.g. Supabase, Stripe, Discord)
+  useEffect(() => {
+    if (!isVerified) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          try {
+            window.close();
+          } catch (err) {
+            console.warn("Browser prevented script from closing tab:", err);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isVerified]);
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
@@ -99,14 +122,33 @@ const VerifyMail = () => {
             </button>
           </form>
         ) : (
-          <div className="pt-4">
-            <Link
-              to="/login"
-              className="w-full inline-flex items-center justify-center space-x-2 py-3.5 bg-white text-black text-xs uppercase font-extrabold tracking-widest rounded-xl hover:bg-neutral-200 transition-colors shadow-lg"
+          <div className="pt-2 space-y-4">
+            <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center space-x-2.5 text-xs text-emerald-400 font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>
+                {countdown > 0
+                  ? `Auto-closing tab in ${countdown}s...`
+                  : "Tab closing..."}
+              </span>
+            </div>
+
+            <p className="text-[11px] text-neutral-500 leading-relaxed">
+              Your account is active. You can now safely close this window and return to your main tab.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  window.close();
+                } catch {
+                  // Browser restriction fallback
+                }
+              }}
+              className="w-full py-3 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-neutral-300 hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-colors"
             >
-              <span>Proceed to Sign In</span>
-              <HiOutlineArrowRight />
-            </Link>
+              Close Tab Now
+            </button>
           </div>
         )}
       </div>
