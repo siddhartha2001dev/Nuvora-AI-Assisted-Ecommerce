@@ -274,7 +274,7 @@ export const createRazorPayOrder = async (req, res) => {
         });
 
         const options = {
-            amount: Math.round(Number(amount) * 100), // paise me convert karna hai (₹1 = 100 paise)
+            amount: Math.round(Number(amount) * 100), // Convert amount to paise (₹1 = 100 paise)
             currency: "INR",
             receipt: `receipt_${Date.now()}`,
         };
@@ -331,7 +331,7 @@ export const verifyRazorpayPayment = async (req, res) => {
             });
         }
 
-        // 2. Signature valid hai, ab orders create karo
+        // 2. Signature is valid; create order records
         const createdOrders = [];
         const items = Array.isArray(cartItems) ? cartItems : [];
 
@@ -360,11 +360,11 @@ export const verifyRazorpayPayment = async (req, res) => {
                 orderStatus: "Placed"
             });
 
-            // Stock kam karo
+            // Decrement product inventory stock
             product.stock = Math.max(0, product.stock - qty);
             await product.save();
 
-            // Cart se item hatao
+            // Remove purchased item from cart
             if (item._id) {
                 await cartSchema.findByIdAndDelete(item._id);
             }

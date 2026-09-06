@@ -206,7 +206,7 @@ const CheckOut = () => {
       );
     }
 
-    // 2. Agar COD hai
+    // 2. Process Cash on Delivery (COD) order
     if (paymentMethod === "COD") {
       try {
         for (const item of cartItems) {
@@ -233,7 +233,7 @@ const CheckOut = () => {
       return;
     }
 
-    // 3. Agar Razorpay hai
+    // 3. Process Razorpay online payment
     try {
       setIsPayingRazorpay(true);
 
@@ -259,7 +259,7 @@ const CheckOut = () => {
         return toast.error("Razorpay SDK failed to load. Please check your internet connection.");
       }
 
-      // Step A: Backend se order create karwao
+      // Step A: Create order on backend via Razorpay API
       const { data } = await api.post("/order/razorpay/create-order", {
         amount: finalTotal,
       });
@@ -269,7 +269,7 @@ const CheckOut = () => {
         import.meta.env.VITE_RAZORPAY_KEY_ID ||
         "rzp_test_TYfrRVbqnoyzaT";
 
-      // Step B: Razorpay Popup Open karo
+      // Step B: Initialize and open Razorpay checkout modal
       const cleanContact = cleanPhoneForRazorpay(delivery.phone || user?.phone || "");
       const isTestMode = razorpayKey.startsWith("rzp_test_");
 
@@ -288,7 +288,7 @@ const CheckOut = () => {
         description: "Curated Minimalist Essentials",
         order_id: data.orderId,
         handler: async (response) => {
-          // Step C: Payment verify karke order place karo
+          // Step C: Verify payment signature and place order
           try {
             await api.post("/order/razorpay/verify-payment", {
               razorpay_order_id: response.razorpay_order_id,
