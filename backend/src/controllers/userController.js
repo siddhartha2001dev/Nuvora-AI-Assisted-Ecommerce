@@ -44,7 +44,8 @@ export const register = async (req, res) => {
         await newUser.save();
 
         // Send verification email
-        await verifyEmail(token, email);
+        const clientOrigin = req.headers.origin || req.headers.referer;
+        await verifyEmail(token, email, clientOrigin);
 
         const userResponse = newUser.toObject();
         delete userResponse.password;
@@ -371,7 +372,8 @@ export const forgotPassword = async (req, res) => {
         user.token = resetToken;
         await user.save();
 
-        await sendResetPasswordEmail(resetToken, email);
+        const clientOrigin = req.headers.origin || req.headers.referer;
+        await sendResetPasswordEmail(resetToken, email, clientOrigin);
 
         return res.status(200).json({
             success: true,

@@ -45,9 +45,37 @@ const sendBrevoEmail = async ({ to, subject, text, html }) => {
     }
 };
 
+/**
+ * Helper to safely resolve the client frontend URL
+ */
+export const getClientUrl = (clientOrigin) => {
+    // 1. If dynamic origin provided from incoming request, use it (handles localhost dev & any deployed domain)
+    if (clientOrigin && typeof clientOrigin === "string" && !clientOrigin.includes("undefined")) {
+        try {
+            const urlObj = new URL(clientOrigin);
+            return `${urlObj.protocol}//${urlObj.host}`;
+        } catch {
+            return clientOrigin.replace(/\/$/, "");
+        }
+    }
+
+    // 2. Check process.env.CLIENT_URL
+    const envUrl = process.env.CLIENT_URL;
+    if (envUrl && envUrl.trim() !== "") {
+        // If deployed to production and env is localhost, fallback to live Vercel
+        if (process.env.NODE_ENV === "production" && envUrl.includes("localhost")) {
+            return "https://nuvora-ruddy.vercel.app";
+        }
+        return envUrl.replace(/\/$/, "");
+    }
+
+    // 3. Fallback to production live application URL
+    return "https://nuvora-ruddy.vercel.app";
+};
+
 // Verify Account Email
-export const verifyEmail = async (token, email) => {
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+export const verifyEmail = async (token, email, clientOrigin) => {
+    const clientUrl = getClientUrl(clientOrigin);
     const verificationUrl = `${clientUrl}/verify-email?token=${token}`;
 
     const mailConfigurations = {
@@ -77,8 +105,8 @@ export const verifyEmail = async (token, email) => {
 };
 
 // Reset Password Email
-export const sendResetPasswordEmail = async (token, email) => {
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+export const sendResetPasswordEmail = async (token, email, clientOrigin) => {
+    const clientUrl = getClientUrl(clientOrigin);
     const resetUrl = `${clientUrl}/reset-password?token=${token}`;
 
     const mailConfigurations = {

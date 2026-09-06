@@ -22,7 +22,11 @@ const Login = () => {
     setPassword("");
   }, [location.pathname]);
 
-  const from = location.state?.from?.pathname || "/";
+  const redirectTarget = location.state?.from
+    ? typeof location.state.from === "string"
+      ? location.state.from
+      : `${location.state.from.pathname || "/"}${location.state.from.search || ""}${location.state.from.hash || ""}`
+    : "/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +49,7 @@ const Login = () => {
       if (res?.data?.role === "Seller" || res?.data?.role === "Admin") {
         navigate("/seller/dashboard");
       } else {
-        navigate(from === "/login" ? "/" : from);
+        navigate(redirectTarget === "/login" ? "/" : redirectTarget, { replace: true });
       }
     } catch (err) {
       const errorMsg =
@@ -147,7 +151,7 @@ const Login = () => {
         {/* Footer */}
         <div className="text-center pt-4 border-t border-neutral-800 text-xs text-neutral-400">
           Don't have an account?{" "}
-          <Link to="/register" className="font-bold text-white hover:underline">
+          <Link to="/register" state={{ from: redirectTarget }} className="font-bold text-white hover:underline">
             Create Account
           </Link>
         </div>

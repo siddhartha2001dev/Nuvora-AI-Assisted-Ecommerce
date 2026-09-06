@@ -194,7 +194,7 @@ const Register = () => {
         {/* Footer */}
         <div className="text-center pt-4 border-t border-neutral-800 text-xs text-neutral-400">
           Already registered?{" "}
-          <Link to="/login" className="font-bold text-white hover:underline">
+          <Link to="/login" state={{ from: location.state?.from }} className="font-bold text-white hover:underline">
             Sign In Here
           </Link>
         </div>

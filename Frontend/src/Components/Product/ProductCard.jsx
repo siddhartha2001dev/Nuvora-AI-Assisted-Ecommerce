@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../redux/slices/cartSlice";
 import {
@@ -8,7 +8,7 @@ import {
   fetchWishlist,
 } from "../../redux/slices/wishlistSlice";
 import toast from "react-hot-toast";
-import { HiOutlineHeart, HiHeart, HiOutlineShoppingBag, HiStar } from "react-icons/hi";
+import { HiOutlineHeart, HiHeart, HiOutlineShoppingBag, HiStar, HiOutlineShare, HiOutlineCheck } from "react-icons/hi";
 
 const ProductCard = ({ product }) => {
   const {
@@ -25,6 +25,9 @@ const ProductCard = ({ product }) => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [copied, setCopied] = useState(false);
 
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { actionLoading: isAddingCart } = useSelector((state) => state.cart);
@@ -43,6 +46,38 @@ const ProductCard = ({ product }) => {
   const displayImage = images?.[0] || "";
   const hasDiscount = discountPrice && discountPrice > 0 && discountPrice < price;
 
+  // Share product
+  const handleShareProduct = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const shareUrl = `${window.location.origin}/product/${_id}`;
+    const shareData = {
+      title: `${title} | NUVORA`,
+      text: `Check out ${title} on NUVORA!`,
+      url: shareUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        toast.success("Shared successfully!");
+        return;
+      } catch (err) {
+        if (err.name === "AbortError") return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      toast.success("Product link copied to clipboard! 🔗");
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      toast.error("Failed to copy product link");
+    }
+  };
+
   // Add to cart
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -50,7 +85,7 @@ const ProductCard = ({ product }) => {
 
     if (!isAuthenticated) {
       toast.error("Please sign in to add items to your bag");
-      navigate("/login");
+      navigate("/login", { state: { from: location } });
       return;
     }
 
@@ -69,7 +104,7 @@ const ProductCard = ({ product }) => {
 
     if (!isAuthenticated) {
       toast.error("Please sign in to save items to wishlist");
-      navigate("/login");
+      navigate("/login", { state: { from: location } });
       return;
     }
 
@@ -121,19 +156,34 @@ const ProductCard = ({ product }) => {
           )}
         </div>
 
-        {/* Wishlist button */}
-        <button
-          type="button"
-          onClick={handleToggleWishlist}
-          className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 p-2 sm:p-2.5 rounded-full bg-black/60 backdrop-blur-md border border-neutral-700 text-white hover:bg-white hover:text-black transition-all shadow-md z-10 cursor-pointer"
-          title={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
-        >
-          {isWishlisted ? (
-            <HiHeart className="text-rose-500 text-sm sm:text-base" />
-          ) : (
-            <HiOutlineHeart className="text-sm sm:text-base" />
-          )}
-        </button>
+        {/* Action buttons: Share & Wishlist */}
+        <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center space-x-1.5 z-10">
+          <button
+            type="button"
+            onClick={handleShareProduct}
+            className="p-2 sm:p-2.5 rounded-full bg-black/60 backdrop-blur-md border border-neutral-700 text-white hover:bg-white hover:text-black transition-all shadow-md cursor-pointer"
+            title="Share Product"
+          >
+            {copied ? (
+              <HiOutlineCheck className="text-emerald-400 text-sm sm:text-base" />
+            ) : (
+              <HiOutlineShare className="text-sm sm:text-base" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleToggleWishlist}
+            className="p-2 sm:p-2.5 rounded-full bg-black/60 backdrop-blur-md border border-neutral-700 text-white hover:bg-white hover:text-black transition-all shadow-md cursor-pointer"
+            title={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
+          >
+            {isWishlisted ? (
+              <HiHeart className="text-rose-500 text-sm sm:text-base" />
+            ) : (
+              <HiOutlineHeart className="text-sm sm:text-base" />
+            )}
+          </button>
+        </div>
 
         {/* Quick Add button */}
         {stock > 0 && (

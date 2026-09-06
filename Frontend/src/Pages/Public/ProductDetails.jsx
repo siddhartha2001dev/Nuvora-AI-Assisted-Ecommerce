@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchProductDetails,
@@ -27,11 +27,14 @@ import {
   HiOutlineArrowLeft,
   HiOutlineSparkles,
   HiOutlineX,
+  HiOutlineShare,
+  HiOutlineCheck,
 } from "react-icons/hi";
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
 
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -49,6 +52,7 @@ const ProductDetails = () => {
 
   const [selectedImg, setSelectedImg] = useState(0);
   const [showAiModal, setShowAiModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Variant selection states (Optional)
   const [selectedColor, setSelectedColor] = useState("");
@@ -110,10 +114,42 @@ const ProductDetails = () => {
       ? (reviews.reduce((acc, r) => acc + (r.rating || 5), 0) / reviews.length).toFixed(1)
       : (product?.rating || 5);
 
+  const handleShareProduct = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const shareUrl = window.location.href;
+    const shareData = {
+      title: `${product?.title || "Product"} | NUVORA`,
+      text: `Check out ${product?.title || "this luxury piece"} on NUVORA!`,
+      url: shareUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        toast.success("Shared successfully!");
+        return;
+      } catch (err) {
+        if (err.name === "AbortError") return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      toast.success("Product link copied to clipboard! 🔗");
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      toast.error("Failed to copy product link");
+    }
+  };
+
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
       toast.error("Please sign in to add items to your bag");
-      navigate("/login");
+      navigate("/login", { state: { from: location } });
       return;
     }
 
@@ -140,7 +176,7 @@ const ProductDetails = () => {
   const handleToggleWishlist = async () => {
     if (!isAuthenticated) {
       toast.error("Please sign in to save items to wishlist");
-      navigate("/login");
+      navigate("/login", { state: { from: location } });
       return;
     }
 
@@ -210,18 +246,34 @@ const ProductDetails = () => {
               alt={product.title}
               className="w-full h-full object-cover object-center"
             />
-            {/* Wishlist Button directly on the Image */}
-            <button
-              onClick={handleToggleWishlist}
-              className="absolute top-4 right-4 p-3 rounded-full bg-black/60 backdrop-blur-md border border-neutral-700/60 text-white hover:scale-110 active:scale-95 transition-all shadow-xl z-10"
-              title={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
-            >
-              {isWishlisted ? (
-                <HiHeart className="text-2xl text-rose-500 fill-rose-500" />
-              ) : (
-                <HiOutlineHeart className="text-2xl text-white" />
-              )}
-            </button>
+            {/* Image Overlay Actions: Share & Wishlist */}
+            <div className="absolute top-4 right-4 flex items-center space-x-2 z-10">
+              <button
+                type="button"
+                onClick={handleShareProduct}
+                className="p-3 rounded-full bg-black/60 backdrop-blur-md border border-neutral-700/60 text-white hover:scale-110 active:scale-95 transition-all shadow-xl cursor-pointer"
+                title="Share Product Link"
+              >
+                {copied ? (
+                  <HiOutlineCheck className="text-xl sm:text-2xl text-emerald-400" />
+                ) : (
+                  <HiOutlineShare className="text-xl sm:text-2xl text-white" />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleToggleWishlist}
+                className="p-3 rounded-full bg-black/60 backdrop-blur-md border border-neutral-700/60 text-white hover:scale-110 active:scale-95 transition-all shadow-xl cursor-pointer"
+                title={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
+              >
+                {isWishlisted ? (
+                  <HiHeart className="text-xl sm:text-2xl text-rose-500 fill-rose-500" />
+                ) : (
+                  <HiOutlineHeart className="text-xl sm:text-2xl text-white" />
+                )}
+              </button>
+            </div>
 
             {/* Out of Stock Overlay Ribbon */}
             {availableStock === 0 && (
@@ -402,6 +454,7 @@ const ProductDetails = () => {
 
                 {/* Wishlist Action Button */}
                 <button
+                  type="button"
                   onClick={handleToggleWishlist}
                   className={`p-4 rounded-2xl border transition-all flex items-center justify-center shrink-0 ${
                     isWishlisted
@@ -414,6 +467,20 @@ const ProductDetails = () => {
                     <HiHeart className="text-xl text-rose-500 fill-rose-500" />
                   ) : (
                     <HiOutlineHeart className="text-xl" />
+                  )}
+                </button>
+
+                {/* Share Action Button */}
+                <button
+                  type="button"
+                  onClick={handleShareProduct}
+                  className="p-4 rounded-2xl border border-neutral-800 bg-neutral-900 text-white hover:bg-neutral-800 hover:border-neutral-700 transition-all flex items-center justify-center shrink-0 active:scale-95 cursor-pointer"
+                  title="Share Product Link"
+                >
+                  {copied ? (
+                    <HiOutlineCheck className="text-xl text-emerald-400" />
+                  ) : (
+                    <HiOutlineShare className="text-xl" />
                   )}
                 </button>
               </div>
@@ -438,13 +505,25 @@ const ProductDetails = () => {
               <p className="text-xs text-neutral-400">
                 This piece has sold out. Save it to your Wishlist to be notified on the next drop.
               </p>
-              <button
-                onClick={handleToggleWishlist}
-                className="mt-3 inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl border border-neutral-700 bg-neutral-800 text-xs font-semibold text-white hover:bg-neutral-700 transition-colors"
-              >
-                {isWishlisted ? <HiHeart className="text-rose-500" /> : <HiOutlineHeart />}
-                <span>{isWishlisted ? "In Your Wishlist" : "Save to Wishlist"}</span>
-              </button>
+              <div className="mt-3 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleToggleWishlist}
+                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl border border-neutral-700 bg-neutral-800 text-xs font-semibold text-white hover:bg-neutral-700 transition-colors cursor-pointer"
+                >
+                  {isWishlisted ? <HiHeart className="text-rose-500" /> : <HiOutlineHeart />}
+                  <span>{isWishlisted ? "In Your Wishlist" : "Save to Wishlist"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleShareProduct}
+                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl border border-neutral-700 bg-neutral-800 text-xs font-semibold text-white hover:bg-neutral-700 transition-colors cursor-pointer"
+                >
+                  {copied ? <HiOutlineCheck className="text-emerald-400" /> : <HiOutlineShare />}
+                  <span>{copied ? "Link Copied" : "Share Piece"}</span>
+                </button>
+              </div>
             </div>
           )}
         </div>
