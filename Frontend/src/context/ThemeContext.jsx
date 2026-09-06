@@ -13,69 +13,30 @@ export const ThemeProvider = ({ children }) => {
     const styleId = "nuvora-theme-dynamic-style";
     let dynamicStyle = document.getElementById(styleId);
 
-    const applyTheme = () => {
-      // If Razorpay modal is actively open in the DOM, do not apply invert filter so it stays in default Light Theme
-      const isRazorpayOpen = !!document.querySelector(".razorpay-container, iframe[src*='razorpay']");
-      if (isRazorpayOpen) {
-        root.style.filter = "";
-        root.style.backgroundColor = "#09090b";
-        return;
+    if (isDarkMode) {
+      root.style.filter = "";
+      root.style.backgroundColor = "#09090b";
+      if (dynamicStyle) {
+        dynamicStyle.remove();
       }
+      localStorage.setItem("nuvora_theme", "dark");
+    } else {
+      root.style.filter = "invert(1) hue-rotate(180deg)";
+      root.style.backgroundColor = "#f6f6f4";
 
-      if (isDarkMode) {
-        root.style.filter = "";
-        root.style.backgroundColor = "#09090b";
-        if (dynamicStyle) {
-          dynamicStyle.remove();
-        }
-        localStorage.setItem("nuvora_theme", "dark");
-      } else {
-        root.style.filter = "invert(1) hue-rotate(180deg)";
-        root.style.backgroundColor = "#f6f6f4";
-
-        // Protect images, videos, canvas, flags, and footer so they stay in true natural colors
-        if (!dynamicStyle) {
-          dynamicStyle = document.createElement("style");
-          dynamicStyle.id = styleId;
-          document.head.appendChild(dynamicStyle);
-        }
+      // Protect images, videos, canvas, and footer so they stay in true natural colors
+      if (!dynamicStyle) {
+        dynamicStyle = document.createElement("style");
+        dynamicStyle.id = styleId;
         dynamicStyle.innerHTML = `
-          img, video, picture, canvas.no-invert, [data-no-invert], .no-invert, #app-footer, .country-flag, [data-flag] {
+          img, video, picture, canvas.no-invert, [data-no-invert], .no-invert, #app-footer {
             filter: invert(1) hue-rotate(180deg) !important;
           }
-          .country-flag, [data-flag], .no-invert, [data-no-invert] {
-            display: inline-block !important;
-          }
         `;
-        localStorage.setItem("nuvora_theme", "light");
+        document.head.appendChild(dynamicStyle);
       }
-    };
-
-    applyTheme();
-
-    // Listen for Razorpay modal opening/closing to ensure it ALWAYS stays in native default Light Theme
-    const observer = new MutationObserver(() => {
-      const isRazorpayOpen = !!document.querySelector(".razorpay-container, iframe[src*='razorpay']");
-      if (isRazorpayOpen) {
-        if (root.style.filter) {
-          root.dataset.suspendedTheme = "true";
-          root.style.filter = "";
-          root.style.backgroundColor = "#09090b";
-        }
-      } else if (root.dataset.suspendedTheme === "true") {
-        delete root.dataset.suspendedTheme;
-        if (!isDarkMode) {
-          root.style.filter = "invert(1) hue-rotate(180deg)";
-          root.style.backgroundColor = "#f6f6f4";
-        }
-      }
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    return () => {
-      observer.disconnect();
-    };
+      localStorage.setItem("nuvora_theme", "light");
+    }
   }, [isDarkMode]);
 
   const toggleTheme = () => {

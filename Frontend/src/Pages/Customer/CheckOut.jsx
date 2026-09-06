@@ -280,23 +280,6 @@ const CheckOut = () => {
         });
       }
 
-      // Ensure root theme filter does not invert Razorpay modal, guaranteeing default Light Theme
-      const root = document.documentElement;
-      const priorFilter = root.style.filter;
-      const priorBg = root.style.backgroundColor;
-
-      const restoreRootTheme = () => {
-        if (priorFilter && !root.style.filter) {
-          root.style.filter = priorFilter;
-          root.style.backgroundColor = priorBg || "#f6f6f4";
-        }
-      };
-
-      if (priorFilter) {
-        root.style.filter = "";
-        root.style.backgroundColor = "#09090b";
-      }
-
       const razor = new window.Razorpay({
         key: razorpayKey,
         amount: data.amount,
@@ -305,7 +288,6 @@ const CheckOut = () => {
         description: "Curated Minimalist Essentials",
         order_id: data.orderId,
         handler: async (response) => {
-          restoreRootTheme();
           // Step C: Payment verify karke order place karo
           try {
             await api.post("/order/razorpay/verify-payment", {
@@ -333,16 +315,12 @@ const CheckOut = () => {
         },
         theme: { color: "#000000" },
         modal: {
-          ondismiss: () => {
-            restoreRootTheme();
-            setIsPayingRazorpay(false);
-          },
+          ondismiss: () => setIsPayingRazorpay(false),
         },
       });
 
       razor.open();
     } catch (error) {
-      if (typeof restoreRootTheme === "function") restoreRootTheme();
       setIsPayingRazorpay(false);
       toast.error(error.response?.data?.message || "Payment failed. Please try again.");
     }
