@@ -64,13 +64,13 @@ export const getClientUrl = (clientOrigin) => {
     if (envUrl && envUrl.trim() !== "") {
         // If deployed to production and env is localhost, fallback to live Vercel
         if (process.env.NODE_ENV === "production" && envUrl.includes("localhost")) {
-            return "https://nuvora-ruddy.vercel.app";
+            return "https://nuvora-ekart.vercel.app";
         }
         return envUrl.replace(/\/$/, "");
     }
 
     // 3. Fallback to production live application URL
-    return "https://nuvora-ruddy.vercel.app";
+    return "https://nuvora-ekart.vercel.app";
 };
 
 // Verify Account Email

@@ -1,6 +1,6 @@
 # 🌌 NUVORA — Monochrome D2C E-Commerce Platform with Google Gemini AI
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-nuvora--ruddy.vercel.app-black?style=for-the-badge&logo=vercel)](https://nuvora-ruddy.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-nuvora--ekart.vercel.app-black?style=for-the-badge&logo=vercel)](https://nuvora-ekart.vercel.app/)
 [![Backend API](https://img.shields.io/badge/Backend%20API-Render-46E3B7?style=for-the-badge&logo=render)](https://nuvora-ai-assisted-ecommerce.onrender.com/)
 
 [![React](https://img.shields.io/badge/React-19-black?logo=react)](https://react.dev/)
@@ -14,7 +14,7 @@
 
 > **NUVORA** is a sleek, monochromatic Direct-to-Consumer (D2C) luxury e-commerce platform built on a clean **Single-Vendor, Multi-Buyer** architecture. Powered by React 19, Redux Toolkit, Node.js Express 5, MongoDB Atlas, Cloudinary CDN, **Brevo HTTPS Email Engine**, and the **Google Gemini 1.5 Flash AI** insights summarizer.
 
-🔗 **Live Application URL**: [https://nuvora-ruddy.vercel.app/](https://nuvora-ruddy.vercel.app/)  
+🔗 **Live Application URL**: [https://nuvora-ekart.vercel.app/](https://nuvora-ekart.vercel.app/)  
 ⚡ **Production Backend API**: [https://nuvora-ai-assisted-ecommerce.onrender.com/](https://nuvora-ai-assisted-ecommerce.onrender.com/)
 
 ---
@@ -194,7 +194,7 @@ nuvora-fs/
 ## 🌐 Production Deployment Guide
 
 ### Live Deployment Links
-- **Frontend (Vercel)**: [https://nuvora-ruddy.vercel.app/](https://nuvora-ruddy.vercel.app/)
+- **Frontend (Vercel)**: [https://nuvora-ekart.vercel.app/](https://nuvora-ekart.vercel.app/)
 - **Backend (Render)**: [https://nuvora-ai-assisted-ecommerce.onrender.com/](https://nuvora-ai-assisted-ecommerce.onrender.com/)
 
 ### Deploy Backend to Render
@@ -211,7 +211,7 @@ nuvora-fs/
    - `BREVO_API_KEY`: *(Your Brevo API Key `xkeysib-...`)*
    - `GEMINI_API_KEY`: *(Your Google Gemini API Key)*
    - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
-   - `CLIENT_URL`: `https://nuvora-ruddy.vercel.app`
+   - `CLIENT_URL`: `https://nuvora-ekart.vercel.app`
 
 ### Deploy Frontend to Vercel
 1. Import the repository into [Vercel](https://vercel.com).
