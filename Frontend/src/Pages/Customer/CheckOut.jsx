@@ -43,9 +43,6 @@ const CheckOut = () => {
   useEffect(() => {
     dispatch(fetchCart());
     dispatch(fetchProfile());
-    return () => {
-      document.body.classList.remove("razorpay-open");
-    };
   }, [dispatch]);
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
@@ -283,14 +280,6 @@ const CheckOut = () => {
         });
       }
 
-      // Mark Razorpay modal active to suspend any theme inversion while window is open
-      document.body.classList.add("razorpay-open");
-
-      const cleanupRazorpayModal = () => {
-        document.body.classList.remove("razorpay-open");
-        setIsPayingRazorpay(false);
-      };
-
       const razor = new window.Razorpay({
         key: razorpayKey,
         amount: data.amount,
@@ -299,7 +288,6 @@ const CheckOut = () => {
         description: "Curated Minimalist Essentials",
         order_id: data.orderId,
         handler: async (response) => {
-          cleanupRazorpayModal();
           // Step C: Verify payment signature and place order
           try {
             await api.post("/order/razorpay/verify-payment", {
@@ -316,6 +304,8 @@ const CheckOut = () => {
             navigate("/my-orders");
           } catch (verErr) {
             toast.error(verErr.response?.data?.message || "Payment verification failed.");
+          } finally {
+            setIsPayingRazorpay(false);
           }
         },
         prefill: {
@@ -323,14 +313,14 @@ const CheckOut = () => {
           email: user?.email || "",
           contact: cleanContact,
         },
+        theme: { color: "#000000" },
         modal: {
-          ondismiss: () => cleanupRazorpayModal(),
+          ondismiss: () => setIsPayingRazorpay(false),
         },
       });
 
       razor.open();
     } catch (error) {
-      document.body.classList.remove("razorpay-open");
       setIsPayingRazorpay(false);
       toast.error(error.response?.data?.message || "Payment failed. Please try again.");
     }
