@@ -19,40 +19,34 @@ export const ThemeProvider = ({ children }) => {
       if (isRazorpayOpen) {
         root.style.filter = "";
         root.style.backgroundColor = "#09090b";
-        document.querySelectorAll(`#${styleId}`).forEach((el) => el.remove());
         return;
       }
 
       if (isDarkMode) {
         root.style.filter = "";
         root.style.backgroundColor = "#09090b";
-        document.querySelectorAll(`#${styleId}`).forEach((el) => el.remove());
+        if (dynamicStyle) {
+          dynamicStyle.remove();
+        }
         localStorage.setItem("nuvora_theme", "dark");
       } else {
         root.style.filter = "invert(1) hue-rotate(180deg)";
         root.style.backgroundColor = "#f6f6f4";
 
         // Protect images, videos, canvas, flags, and footer so they stay in true natural colors
-        document.querySelectorAll(`#${styleId}`).forEach((el) => el.remove());
-        const newStyle = document.createElement("style");
-        newStyle.id = styleId;
-        newStyle.innerHTML = `
-          html[style*="invert"] img,
-          html[style*="invert"] video,
-          html[style*="invert"] picture,
-          html[style*="invert"] canvas.no-invert,
-          html[style*="invert"] [data-no-invert],
-          html[style*="invert"] .no-invert,
-          html[style*="invert"] #app-footer,
-          html[style*="invert"] .country-flag,
-          html[style*="invert"] [data-flag] {
+        if (!dynamicStyle) {
+          dynamicStyle = document.createElement("style");
+          dynamicStyle.id = styleId;
+          document.head.appendChild(dynamicStyle);
+        }
+        dynamicStyle.innerHTML = `
+          img, video, picture, canvas.no-invert, [data-no-invert], .no-invert, #app-footer, .country-flag, [data-flag] {
             filter: invert(1) hue-rotate(180deg) !important;
           }
           .country-flag, [data-flag], .no-invert, [data-no-invert] {
             display: inline-block !important;
           }
         `;
-        document.head.appendChild(newStyle);
         localStorage.setItem("nuvora_theme", "light");
       }
     };
