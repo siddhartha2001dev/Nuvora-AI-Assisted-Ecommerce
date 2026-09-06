@@ -18,7 +18,7 @@ const ProductCard = ({ product }) => {
     discountPrice = 0,
     category = "General",
     images = [],
-    rating = 5.0,
+    rating = 0,
     numReviews = 0,
     stock = 1,
   } = product || {};
@@ -151,7 +151,7 @@ const ProductCard = ({ product }) => {
           )}
           {stock === 0 && (
             <span className="bg-rose-950 text-rose-300 border border-rose-800 text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">
-              Sold Out
+              Out of Stock
             </span>
           )}
         </div>
@@ -208,11 +208,17 @@ const ProductCard = ({ product }) => {
             <span className="uppercase tracking-widest font-mono text-[10px]">
               {category}
             </span>
-            <div className="flex items-center text-neutral-300 font-semibold space-x-1">
-              <HiStar className="text-amber-400 text-xs sm:text-sm" />
-              <span>{rating || 5}</span>
-              <span className="text-neutral-500 text-[9px]">({numReviews || 0})</span>
-            </div>
+            {numReviews > 0 ? (
+              <div className="flex items-center text-neutral-300 font-semibold space-x-1">
+                <HiStar className="text-amber-400 text-xs sm:text-sm" />
+                <span>{rating ? Number(rating).toFixed(1) : "0.0"}</span>
+                <span className="text-neutral-500 text-[9px]">({numReviews})</span>
+              </div>
+            ) : (
+              <span className="text-[10px] text-neutral-500 font-mono">
+                No reviews available
+              </span>
+            )}
           </div>
 
           <Link to={`/product/${_id}`}>

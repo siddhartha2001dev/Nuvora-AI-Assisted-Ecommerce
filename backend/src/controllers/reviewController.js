@@ -8,7 +8,7 @@ const updateProductRatingStats = async (productId) => {
         const count = allProductReviews.length;
         const avgRating = count > 0
             ? allProductReviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / count
-            : 5;
+            : 0;
 
         await productSchema.findByIdAndUpdate(productId, {
             rating: Number(avgRating.toFixed(1)),

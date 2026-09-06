@@ -37,7 +37,7 @@ const ReviewSection = ({ productId }) => {
   const averageRating =
     reviews.length > 0
       ? (reviews.reduce((acc, r) => acc + (r.rating || 5), 0) / reviews.length).toFixed(1)
-      : "5.0";
+      : null;
 
   // Submit review
   const handleSubmit = async (e) => {
@@ -80,26 +80,34 @@ const ReviewSection = ({ productId }) => {
           <h2 className="text-2xl font-bold tracking-tight text-white font-['Syne',sans-serif]">
             Verified Customer Reviews
           </h2>
-          <div className="flex items-center space-x-2 mt-2">
-            <div className="flex text-amber-400">
-              {[...Array(5)].map((_, i) => (
-                <HiStar
-                  key={i}
-                  className={`text-lg ${
-                    i < Math.round(Number(averageRating))
-                      ? "text-amber-400"
-                      : "text-neutral-700"
-                  }`}
-                />
-              ))}
+          {reviews.length > 0 ? (
+            <div className="flex items-center space-x-2 mt-2">
+              <div className="flex text-amber-400">
+                {[...Array(5)].map((_, i) => (
+                  <HiStar
+                    key={i}
+                    className={`text-lg ${
+                      i < Math.round(Number(averageRating))
+                        ? "text-amber-400"
+                        : "text-neutral-700"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-sm font-bold text-white">
+                {averageRating} out of 5
+              </span>
+              <span className="text-neutral-500 text-xs">
+                • {reviews.length} {reviews.length === 1 ? "Verified Review" : "Verified Reviews"}
+              </span>
             </div>
-            <span className="text-sm font-bold text-white">
-              {averageRating} out of 5
-            </span>
-            <span className="text-neutral-500 text-xs">
-              • {reviews.length} {reviews.length === 1 ? "Verified Review" : "Verified Reviews"}
-            </span>
-          </div>
+          ) : (
+            <div className="mt-2 flex items-center space-x-2">
+              <span className="text-xs text-neutral-400 font-medium bg-neutral-900 border border-neutral-800 px-3 py-1 rounded-full font-mono">
+                No reviews available
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -189,8 +197,16 @@ const ReviewSection = ({ productId }) => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-xs font-bold text-white">
-                      {(rev.userId?.userName || "U").slice(0, 2).toUpperCase()}
+                    <div className="w-9 h-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-xs font-bold text-white overflow-hidden shrink-0">
+                      {rev.userId?.avatarUrl ? (
+                        <img
+                          src={rev.userId.avatarUrl}
+                          alt={rev.userId?.userName || "User"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        (rev.userId?.userName || "U").slice(0, 2).toUpperCase()
+                      )}
                     </div>
                     <div>
                       <div className="flex items-center space-x-2">
