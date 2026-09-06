@@ -4,6 +4,7 @@ import {
   HiOutlineViewGrid,
   HiOutlineClipboardList,
   HiOutlineShoppingBag,
+  HiOutlineTag,
 } from "react-icons/hi";
 
 const SellerSidebar = () => {
@@ -19,6 +20,11 @@ const SellerSidebar = () => {
       name: "Customer Orders",
       path: "/seller/orders",
       icon: HiOutlineClipboardList,
+    },
+    {
+      name: "Coupons & Offers",
+      path: "/seller/coupons",
+      icon: HiOutlineTag,
     },
   ];
 

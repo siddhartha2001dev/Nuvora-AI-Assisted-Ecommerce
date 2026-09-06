@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCart } from "../../redux/slices/cartSlice";
@@ -31,17 +31,34 @@ const Cart = () => {
     subtotal += activePrice * quantity;
   });
 
-  // Step 4: Calculate Discount (Apply ₹500 discount if subtotal exceeds ₹3000)
-  let discount = 0;
-  if (subtotal > 3000) {
-    discount = 500;
-  }
+  const [appliedCoupon, setAppliedCoupon] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem("nuvora_applied_coupon");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const handleCouponApply = (coupon) => {
+    setAppliedCoupon(coupon);
+    try {
+      sessionStorage.setItem("nuvora_applied_coupon", JSON.stringify(coupon));
+    } catch {}
+  };
+
+  const handleCouponRemove = () => {
+    setAppliedCoupon(null);
+    try {
+      sessionStorage.removeItem("nuvora_applied_coupon");
+    } catch {}
+  };
+
+  // Step 4: Calculate Special Volume Discount (Apply ₹500 discount if subtotal exceeds ₹3000)
+  const specialDiscount = subtotal > 3000 ? 500 : 0;
 
   // Step 5: Calculate Shipping charges (Free shipping over ₹1999 or when empty, else ₹150)
-  let shipping = 150;
-  if (subtotal === 0 || subtotal > 1999) {
-    shipping = 0;
-  }
+  const shipping = subtotal === 0 || subtotal > 1999 ? 0 : 150;
 
   // Step 6: Show loader while data is being fetched from the backend
   if (isLoading && cartItems.length === 0) {
@@ -107,7 +124,11 @@ const Cart = () => {
             <OrderSummary
               subtotal={subtotal}
               shipping={shipping}
-              discount={discount}
+              specialDiscount={specialDiscount}
+              appliedCoupon={appliedCoupon}
+              onCouponApply={handleCouponApply}
+              onCouponRemove={handleCouponRemove}
+              allowCoupon={true}
               buttonText="Proceed to Checkout"
               buttonLink="/checkout"
             />

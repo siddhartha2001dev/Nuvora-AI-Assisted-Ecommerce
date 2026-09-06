@@ -9,6 +9,7 @@ import reviewRouter from "./src/routers/reviewRouter.js";
 import wishlistRouter from "./src/routers/wishlistRouter.js";
 import orderRouter from "./src/routers/orderRouter.js";
 import newsletterRouter from "./src/routers/newsletterRouter.js";
+import couponRouter from "./src/routers/couponRouter.js";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -37,6 +38,7 @@ app.use("/review", reviewRouter);
 app.use("/wishlist", wishlistRouter);
 app.use("/order", orderRouter);
 app.use("/newsletter", newsletterRouter);
+app.use("/coupon", couponRouter);
 
 // 404 Route Handler
 app.use((req, res) => {

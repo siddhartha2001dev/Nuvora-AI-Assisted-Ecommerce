@@ -31,6 +31,7 @@ import Profile from "./Pages/Customer/Profile";
 import SellerDashboard from "./Pages/Seller/SellerDashboard";
 import AddProduct from "./Pages/Seller/AddProduct";
 import SellerOrders from "./Pages/Seller/SellerOrders";
+import SellerCoupons from "./Pages/Seller/SellerCoupons";
 
 // Error Pages
 import NotFound from "./Pages/Error/NotFound";
@@ -142,6 +143,14 @@ function App() {
               element={
                 <ProtectedRoute requireSeller={true}>
                   <SellerOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/seller/coupons"
+              element={
+                <ProtectedRoute requireSeller={true}>
+                  <SellerCoupons />
                 </ProtectedRoute>
               }
             />

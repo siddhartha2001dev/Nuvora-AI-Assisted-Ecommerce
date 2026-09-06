@@ -32,15 +32,40 @@ const CheckOut = () => {
     phone: user?.phone || "",
   });
 
+  const [appliedCoupon, setAppliedCoupon] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem("nuvora_applied_coupon");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const handleCouponApply = (coupon) => {
+    setAppliedCoupon(coupon);
+    try {
+      sessionStorage.setItem("nuvora_applied_coupon", JSON.stringify(coupon));
+    } catch {}
+  };
+
+  const handleCouponRemove = () => {
+    setAppliedCoupon(null);
+    try {
+      sessionStorage.removeItem("nuvora_applied_coupon");
+    } catch {}
+  };
+
   const subtotal = cartItems.reduce((acc, item) => {
     const p = item.productId || {};
     const price = p.discountPrice > 0 ? p.discountPrice : p.price || 0;
     return acc + price * (item.quantity || 1);
   }, 0);
 
-  const discount = subtotal > 3000 ? 500 : 0;
+  const specialDiscount = subtotal > 3000 ? 500 : 0;
+  const couponDiscount = appliedCoupon?.discountAmount || 0;
+  const totalDiscount = specialDiscount + couponDiscount;
   const shipping = subtotal > 1999 || subtotal === 0 ? 0 : 150;
-  const finalTotal = subtotal - discount + shipping;
+  const finalTotal = Math.max(0, subtotal - totalDiscount + shipping);
 
   const handleInputChange = (e) => {
     setAddressData((prev) => ({
@@ -76,6 +101,7 @@ const CheckOut = () => {
           ).unwrap();
         }
         toast.success("Order placed with Cash on Delivery!");
+        handleCouponRemove();
         dispatch(fetchCart());
         navigate("/my-orders");
       } catch (err) {
@@ -140,6 +166,7 @@ const CheckOut = () => {
             });
 
             toast.success("Payment Successful! Order Placed 🎉");
+            handleCouponRemove();
             dispatch(fetchCart());
             navigate("/my-orders");
           } catch (verErr) {
@@ -369,14 +396,18 @@ const CheckOut = () => {
 
           <OrderSummary
             subtotal={subtotal}
-            discount={discount}
+            specialDiscount={specialDiscount}
             shipping={shipping}
+            appliedCoupon={appliedCoupon}
+            onCouponApply={handleCouponApply}
+            onCouponRemove={handleCouponRemove}
+            allowCoupon={true}
             buttonText={
               isPlacingOrder || isPayingRazorpay
                 ? "Processing..."
                 : paymentMethod === "Razorpay"
-                ? "Pay with Razorpay"
-                : "Confirm & Place Order"
+                ? `Pay ₹${finalTotal.toLocaleString()} with Razorpay`
+                : `Confirm Order (₹${finalTotal.toLocaleString()})`
             }
             onButtonClick={handleConfirmOrder}
           />
