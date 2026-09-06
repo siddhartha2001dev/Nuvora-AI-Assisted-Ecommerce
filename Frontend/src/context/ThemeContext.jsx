@@ -37,6 +37,16 @@ export const ThemeProvider = ({ children }) => {
         .country-flag, [data-flag], .no-invert, [data-no-invert] {
           display: inline-block !important;
         }
+        /* Keep Razorpay Checkout in original natural white colors in Light Mode */
+        .razorpay-container,
+        body > iframe[src*="razorpay"],
+        body > iframe.razorpay-checkout-frame,
+        [class*="razorpay-container"] {
+          filter: invert(1) hue-rotate(180deg) !important;
+        }
+        .razorpay-container * {
+          filter: none !important;
+        }
       `;
       localStorage.setItem("nuvora_theme", "light");
     }
