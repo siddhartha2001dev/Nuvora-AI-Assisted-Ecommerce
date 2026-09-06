@@ -78,7 +78,12 @@ prepareHeaders: (headers) => {
 | 5 | Auth | `POST` | `/user/refresh-token` | `refreshToken` | `apiSlice.js` (Interceptor) | `{ refreshToken }` |
 | 6 | User Profile | `GET` | `/user/profile` | `useGetProfileQuery` | `Pages/Customer/Profile.jsx` | Header `Bearer <token>` |
 | 7 | User Profile | `PUT` | `/user/profile` | `useUpdateProfileMutation` | `Pages/Customer/Profile.jsx` | `{ userName, phone, address, shopName }` |
-| 8 | Products | `GET` | `/product/all` | `useGetProductsQuery` | `Pages/Public/Home.jsx`, `Shop.jsx` | None (Public) |
+| 8 | Address Book | `GET` | `/user/addresses` | `fetchAddresses` | `Pages/Customer/Profile.jsx`, `CheckOut.jsx` | Header `Bearer <token>` |
+| 9 | Address Book | `POST` | `/user/address` | `addAddress` | `Pages/Customer/Profile.jsx`, `CheckOut.jsx` | `{ fullName, phone, street, city, state, pinCode, label, isDefault }` |
+| 10 | Address Book | `PUT` | `/user/address/:addressId` | `updateAddress` | `Pages/Customer/Profile.jsx` | `addressId` + `{ fullName, phone, street, city, state, pinCode, label, isDefault }` |
+| 11 | Address Book | `DELETE` | `/user/address/:addressId` | `deleteAddress` | `Pages/Customer/Profile.jsx` | `req.params.addressId` |
+| 12 | Address Book | `PATCH` | `/user/address/:addressId/default` | `setDefaultAddress` | `Pages/Customer/Profile.jsx` | `req.params.addressId` |
+| 13 | Products | `GET` | `/product/all` | `useGetProductsQuery` | `Pages/Public/Home.jsx`, `Shop.jsx` | None (Public) |
 | 9 | Products | `GET` | `/product/:id` | `useGetProductDetailsQuery` | `Pages/Public/ProductDetails.jsx` | `req.params.id` |
 | 10 | Products | `POST` | `/product/create` | `useCreateProductMutation` | `Pages/Seller/AddProduct.jsx` | `FormData` (Multipart: title, price, discountPrice, stock, category, images) |
 | 11 | Products | `PUT` | `/product/update/:id` | `useUpdateProductMutation` | `Pages/Seller/EditProduct.jsx` | `id` + `FormData` |

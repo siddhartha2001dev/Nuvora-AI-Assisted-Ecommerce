@@ -488,3 +488,245 @@ export const uploadProfilePicture = async (req, res) => {
         });
     }
 };
+
+// 11. Get User Addresses (Address Book)
+export const getAddresses = async (req, res) => {
+    try {
+        const user = await userSchema.findById(req.userId).select("addresses userName phone");
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: user.addresses || []
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// 12. Add New Address to Address Book
+export const addAddress = async (req, res) => {
+    try {
+        const { fullName, phone, street, city, state, pinCode, label, isDefault } = req.body;
+
+        const user = await userSchema.findById(req.userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        if (!user.addresses) {
+            user.addresses = [];
+        }
+
+        const shouldBeDefault = Boolean(isDefault) || user.addresses.length === 0;
+
+        if (shouldBeDefault) {
+            user.addresses.forEach(addr => {
+                addr.isDefault = false;
+            });
+        }
+
+        const newAddress = {
+            fullName: fullName?.trim() || user.userName || "",
+            phone: phone?.trim() || user.phone || "",
+            street: street?.trim(),
+            city: city?.trim(),
+            state: state?.trim(),
+            pinCode: pinCode?.trim(),
+            label: label || "Home",
+            isDefault: shouldBeDefault
+        };
+
+        user.addresses.push(newAddress);
+
+        if (shouldBeDefault) {
+            user.address = `${newAddress.street}, ${newAddress.city}, ${newAddress.state} - ${newAddress.pinCode}`;
+        }
+
+        await user.save();
+
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        return res.status(201).json({
+            success: true,
+            message: "Address added successfully",
+            data: user.addresses,
+            user: userResponse
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// 13. Update Existing Address
+export const updateAddress = async (req, res) => {
+    try {
+        const { addressId } = req.params;
+        const { fullName, phone, street, city, state, pinCode, label, isDefault } = req.body;
+
+        const user = await userSchema.findById(req.userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const targetAddress = user.addresses.id(addressId);
+        if (!targetAddress) {
+            return res.status(404).json({
+                success: false,
+                message: "Address not found"
+            });
+        }
+
+        if (isDefault) {
+            user.addresses.forEach(addr => {
+                addr.isDefault = false;
+            });
+            targetAddress.isDefault = true;
+            user.address = `${(street ?? targetAddress.street).trim()}, ${(city ?? targetAddress.city).trim()}, ${(state ?? targetAddress.state).trim()} - ${(pinCode ?? targetAddress.pinCode).trim()}`;
+        }
+
+        if (fullName !== undefined) targetAddress.fullName = fullName.trim();
+        if (phone !== undefined) targetAddress.phone = phone.trim();
+        if (street !== undefined) targetAddress.street = street.trim();
+        if (city !== undefined) targetAddress.city = city.trim();
+        if (state !== undefined) targetAddress.state = state.trim();
+        if (pinCode !== undefined) targetAddress.pinCode = pinCode.trim();
+        if (label !== undefined) targetAddress.label = label;
+
+        // If target was already default, update legacy address field too
+        if (targetAddress.isDefault) {
+            user.address = `${targetAddress.street}, ${targetAddress.city}, ${targetAddress.state} - ${targetAddress.pinCode}`;
+        }
+
+        await user.save();
+
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        return res.status(200).json({
+            success: true,
+            message: "Address updated successfully",
+            data: user.addresses,
+            user: userResponse
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// 14. Delete Address from Address Book
+export const deleteAddress = async (req, res) => {
+    try {
+        const { addressId } = req.params;
+
+        const user = await userSchema.findById(req.userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const targetAddress = user.addresses.id(addressId);
+        if (!targetAddress) {
+            return res.status(404).json({
+                success: false,
+                message: "Address not found"
+            });
+        }
+
+        const wasDefault = targetAddress.isDefault;
+        user.addresses.pull({ _id: addressId });
+
+        if (wasDefault && user.addresses.length > 0) {
+            user.addresses[0].isDefault = true;
+            user.address = `${user.addresses[0].street}, ${user.addresses[0].city}, ${user.addresses[0].state} - ${user.addresses[0].pinCode}`;
+        } else if (user.addresses.length === 0) {
+            user.address = "";
+        }
+
+        await user.save();
+
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        return res.status(200).json({
+            success: true,
+            message: "Address deleted successfully",
+            data: user.addresses,
+            user: userResponse
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// 15. Set Address as Default
+export const setDefaultAddress = async (req, res) => {
+    try {
+        const { addressId } = req.params;
+
+        const user = await userSchema.findById(req.userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const targetAddress = user.addresses.id(addressId);
+        if (!targetAddress) {
+            return res.status(404).json({
+                success: false,
+                message: "Address not found"
+            });
+        }
+
+        user.addresses.forEach(addr => {
+            addr.isDefault = addr._id.toString() === addressId;
+        });
+
+        user.address = `${targetAddress.street}, ${targetAddress.city}, ${targetAddress.state} - ${targetAddress.pinCode}`;
+
+        await user.save();
+
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        return res.status(200).json({
+            success: true,
+            message: "Default address updated",
+            data: user.addresses,
+            user: userResponse
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};

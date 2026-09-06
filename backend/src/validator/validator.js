@@ -170,3 +170,41 @@ export const orderValidationSchema = yup.object({
         .oneOf(["COD", "Razorpay"], "Payment method must be 'COD' or 'Razorpay'")
         .default("COD")
 });
+
+// 8. Address Validation Schema
+export const addressValidationSchema = yup.object({
+    fullName: yup
+        .string()
+        .trim()
+        .optional()
+        .default(""),
+    phone: yup
+        .string()
+        .trim()
+        .optional()
+        .default(""),
+    street: yup
+        .string()
+        .trim()
+        .required("Street address is required"),
+    city: yup
+        .string()
+        .trim()
+        .required("City is required"),
+    state: yup
+        .string()
+        .trim()
+        .required("State is required"),
+    pinCode: yup
+        .string()
+        .trim()
+        .required("PIN code is required"),
+    label: yup
+        .string()
+        .oneOf(["Home", "Work", "Other"], "Label must be 'Home', 'Work', or 'Other'")
+        .default("Home"),
+    isDefault: yup
+        .boolean()
+        .optional()
+        .default(false)
+});

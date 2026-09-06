@@ -68,6 +68,13 @@
 ### ☀️/🌙 9. Day & Night Monochrome Theming Engine
 - **Self-Contained `ThemeContext.jsx`**: Global theme inverter with media and footer preservation (`.no-invert` protection) while keeping `index.css` completely clean.
 
+### 📍 10. Multi-Address Management (Address Book) & 1-Click Checkout Auto-Apply
+- **Profile Address Book**: Buyers can add, edit, delete, and designate a "Default Delivery Address" across labeled destinations (`Home`, `Work`, `Other`).
+- **Checkout Auto-Apply**: Default delivery address is automatically fetched and applied at checkout without repetitive manual typing.
+- **Interactive Address Selector**: 1-click address card selector allowing instant switching between saved addresses.
+- **On-the-Fly Address Addition**: Option to enter a new delivery address directly during checkout with a *"Save to Address Book for future orders"* toggle.
+- **Full Compatibility**: Works seamlessly with both Cash on Delivery (COD) and Razorpay Online payments, retaining accurate past order address snapshots.
+
 ---
 
 ## 🛠️ Tech Stack & Dependencies
@@ -250,6 +257,11 @@ nuvora-fs/
 | `/user/login` | `POST` | Public | Authenticate user & issue signed JWT |
 | `/user/profile` | `GET` / `PUT` | Logged In | Fetch / Update user profile |
 | `/user/profile/picture` | `PUT` | Buyer | Upload avatar directly to Cloudinary |
+| `/user/addresses` | `GET` | Logged In | Fetch user's saved Address Book |
+| `/user/address` | `POST` | Logged In | Add new address to Address Book (with default support) |
+| `/user/address/:addressId` | `PUT` | Logged In | Update existing saved address |
+| `/user/address/:addressId` | `DELETE` | Logged In | Remove address from Address Book |
+| `/user/address/:addressId/default` | `PATCH` | Logged In | Set address as primary default delivery address |
 | `/user/forgot-password` | `POST` | Public | Send 15-minute Brevo password reset link |
 | `/user/reset-password` | `POST` | Public | Verify token and update password |
 | `/product/paginate` | `GET` | Public | Unified multi-filter catalog query |

@@ -147,6 +147,71 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+// 11. Fetch Addresses
+export const fetchAddresses = createAsyncThunk(
+  "auth/fetchAddresses",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get("/user/addresses");
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch addresses");
+    }
+  }
+);
+
+// 12. Add Address
+export const addAddress = createAsyncThunk(
+  "auth/addAddress",
+  async (addressData, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/user/address", addressData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Failed to add address");
+    }
+  }
+);
+
+// 13. Update Address
+export const updateAddress = createAsyncThunk(
+  "auth/updateAddress",
+  async ({ addressId, ...addressData }, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/user/address/${addressId}`, addressData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Failed to update address");
+    }
+  }
+);
+
+// 14. Delete Address
+export const deleteAddress = createAsyncThunk(
+  "auth/deleteAddress",
+  async (addressId, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(`/user/address/${addressId}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Failed to delete address");
+    }
+  }
+);
+
+// 15. Set Default Address
+export const setDefaultAddress = createAsyncThunk(
+  "auth/setDefaultAddress",
+  async (addressId, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(`/user/address/${addressId}/default`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Failed to set default address");
+    }
+  }
+);
+
 // =============================================================================
 // AUTH SLICE
 // =============================================================================
@@ -219,6 +284,29 @@ const authSlice = createSlice({
       localStorage.removeItem("nuvora_user");
       localStorage.removeItem("nuvora_token");
     });
+
+    // Address Book reducers
+    const handleAddressFulfilled = (state, action) => {
+      if (action.payload?.user) {
+        state.user = action.payload.user;
+      } else if (state.user && action.payload?.data) {
+        state.user = { ...state.user, addresses: action.payload.data };
+      }
+      if (state.user) {
+        localStorage.setItem("nuvora_user", JSON.stringify(state.user));
+      }
+    };
+
+    builder.addCase(fetchAddresses.fulfilled, (state, action) => {
+      if (state.user && action.payload?.data) {
+        state.user = { ...state.user, addresses: action.payload.data };
+        localStorage.setItem("nuvora_user", JSON.stringify(state.user));
+      }
+    });
+    builder.addCase(addAddress.fulfilled, handleAddressFulfilled);
+    builder.addCase(updateAddress.fulfilled, handleAddressFulfilled);
+    builder.addCase(deleteAddress.fulfilled, handleAddressFulfilled);
+    builder.addCase(setDefaultAddress.fulfilled, handleAddressFulfilled);
   },
 });
 
