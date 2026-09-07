@@ -1,11 +1,17 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import api from "../../api/axiosInstance";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const location = useLocation();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+
+  const isAdmin = isAuthenticated && (user?.role === "Admin" || user?.role === "Seller");
+  const isAdminPanel = location.pathname.startsWith("/seller") || (isAdmin && location.pathname.startsWith("/seller"));
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
@@ -34,7 +40,7 @@ const Footer = () => {
       style={{ backgroundColor: "#050507", color: "#a3a3a3" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+        <div className={`grid grid-cols-1 ${isAdminPanel ? "md:grid-cols-3" : "md:grid-cols-4"} gap-10`}>
           {/* Brand Info Column */}
           <div className="space-y-4 md:col-span-1">
             <Link
@@ -89,11 +95,6 @@ const Footer = () => {
             </h4>
             <ul className="space-y-2.5 text-sm">
               <li>
-                <Link to="/my-orders" className="hover:text-white transition-colors">
-                  Track Order
-                </Link>
-              </li>
-              <li>
                 <Link to="/wishlist" className="hover:text-white transition-colors">
                   My Wishlist
                 </Link>
@@ -103,40 +104,37 @@ const Footer = () => {
                   Shopping Bag
                 </Link>
               </li>
-              <li>
-                <Link to="/seller/dashboard" className="hover:text-white transition-colors">
-                  Admin Portal
-                </Link>
-              </li>
             </ul>
           </div>
 
-          {/* Newsletter Subscription Column */}
-          <div className="space-y-4">
-            <h4 className="text-xs uppercase tracking-widest font-semibold text-white mb-4">
-              Stay In The Loop
-            </h4>
-            <p className="text-sm text-neutral-400">
-              Subscribe to receive exclusive collection drops and minimalist editorial insights.
-            </p>
-            <form onSubmit={handleSubscribe} className="flex space-x-2">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter email address"
-                required
-                className="w-full bg-neutral-900 text-sm text-white px-3.5 py-2.5 rounded-lg border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
-              />
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-white text-black text-xs uppercase tracking-wider font-bold px-4 py-2.5 rounded-lg hover:bg-neutral-200 transition-colors shrink-0 cursor-pointer disabled:opacity-60"
-              >
-                {loading ? "Joining..." : "Join"}
-              </button>
-            </form>
-          </div>
+          {/* Newsletter Subscription Column (Hidden on Admin Panel) */}
+          {!isAdminPanel && (
+            <div className="space-y-4">
+              <h4 className="text-xs uppercase tracking-widest font-semibold text-white mb-4">
+                Stay In The Loop
+              </h4>
+              <p className="text-sm text-neutral-400">
+                Subscribe to receive exclusive collection drops and minimalist editorial insights.
+              </p>
+              <form onSubmit={handleSubscribe} className="flex space-x-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter email address"
+                  required
+                  className="w-full bg-neutral-900 text-sm text-white px-3.5 py-2.5 rounded-lg border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-600"
+                />
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-white text-black text-xs uppercase tracking-wider font-bold px-4 py-2.5 rounded-lg hover:bg-neutral-200 transition-colors shrink-0 cursor-pointer disabled:opacity-60"
+                >
+                  {loading ? "Joining..." : "Join"}
+                </button>
+              </form>
+            </div>
+          )}
         </div>
 
         {/* Bottom Bar: Copyright & Policies */}
