@@ -204,7 +204,7 @@ const SellerDashboard = () => {
             <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
               <Link
                 to="/seller/coupons"
-                className="inline-flex items-center justify-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-neutral-900 border border-neutral-700 hover:border-neutral-500 text-white text-xs uppercase font-extrabold tracking-wider rounded-xl transition-all shadow-sm"
+                className="hidden sm:inline-flex items-center justify-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-neutral-900 border border-neutral-700 hover:border-neutral-500 text-white text-xs uppercase font-extrabold tracking-wider rounded-xl transition-all shadow-sm"
               >
                 <HiOutlineTag className="text-base text-amber-400" />
                 <span>Custom Coupons</span>
@@ -258,10 +258,10 @@ const SellerDashboard = () => {
               </span>
             </div>
 
-            {/* Custom Coupons & Offers Card */}
+            {/* Custom Coupons & Offers Card (Desktop only, hidden on mobile) */}
             <Link
               to="/seller/coupons"
-              className="p-4 sm:p-5 bg-[#121215] border border-neutral-800/80 hover:border-neutral-600 rounded-2xl space-y-1.5 sm:space-y-2 transition-all block group"
+              className="hidden sm:block p-4 sm:p-5 bg-[#121215] border border-neutral-800/80 hover:border-neutral-600 rounded-2xl space-y-1.5 sm:space-y-2 transition-all group"
             >
               <div className="flex items-center justify-between text-neutral-400 group-hover:text-white transition-colors">
                 <span className="text-[10px] sm:text-xs uppercase tracking-wider font-semibold">Custom Coupons</span>

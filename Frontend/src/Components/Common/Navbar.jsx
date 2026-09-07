@@ -11,8 +11,6 @@ import {
   HiOutlineHeart,
   HiOutlineUser,
   HiOutlineSearch,
-  HiOutlineMenu,
-  HiOutlineX,
   HiOutlineSparkles,
   HiOutlineLogout,
   HiOutlineSun,
@@ -22,12 +20,59 @@ import {
   HiOutlineHome,
   HiOutlineChevronRight,
   HiOutlineTag,
+  HiOutlinePlus,
+  HiOutlineEye,
 } from "react-icons/hi";
+
+// Unique Bespoke Animated Luxury Hamburger Component
+const AnimatedHamburger = ({ isOpen, onClick }) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+      aria-expanded={isOpen}
+      className={`md:hidden relative w-11 h-11 rounded-2xl flex flex-col items-center justify-center transition-all duration-300 focus:outline-none select-none z-50 ${
+        isOpen
+          ? "bg-white text-black shadow-[0_0_24px_rgba(255,255,255,0.35)] border border-white"
+          : "bg-[#121215] text-neutral-300 border border-neutral-800 hover:border-neutral-600 active:scale-90"
+      }`}
+    >
+      <div className="w-5 h-4 flex flex-col justify-between items-center relative">
+        {/* Top bar */}
+        <span
+          className={`h-[2px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] origin-center ${
+            isOpen
+              ? "w-5 bg-black absolute top-[7px] rotate-45"
+              : "w-5 bg-neutral-200"
+          }`}
+        />
+        {/* Middle bar with aesthetic luxury asymmetry */}
+        <span
+          className={`h-[2px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isOpen
+              ? "w-0 opacity-0 -translate-x-3 pointer-events-none"
+              : "w-3 bg-neutral-400 self-end mr-0.5"
+          }`}
+        />
+        {/* Bottom bar */}
+        <span
+          className={`h-[2px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] origin-center ${
+            isOpen
+              ? "w-5 bg-black absolute top-[7px] -rotate-45"
+              : "w-5 bg-neutral-200"
+          }`}
+        />
+      </div>
+    </button>
+  );
+};
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [hideOnMobile, setHideOnMobile] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const dropdownRef = useRef(null);
 
   const location = useLocation();
@@ -58,6 +103,30 @@ const Navbar = () => {
     setUserDropdownOpen(false);
   }, [location.pathname]);
 
+  // Lock body scroll when mobile full-screen menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [mobileMenuOpen]);
+
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setMobileMenuOpen(false);
+        setUserDropdownOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -69,7 +138,7 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Auto-hide navbar on mobile when scrolling into footer area
+  // Auto-hide navbar on mobile when scrolling into footer area (disabled when menu is open)
   useEffect(() => {
     const handleScroll = () => {
       if (window.innerWidth >= 768) {
@@ -106,6 +175,14 @@ const Navbar = () => {
     navigate("/login");
   };
 
+  const handleMobileSearch = (e) => {
+    if (e.key === "Enter" && mobileSearchQuery.trim()) {
+      setMobileMenuOpen(false);
+      navigate(`/shop?search=${encodeURIComponent(mobileSearchQuery.trim())}`);
+      setMobileSearchQuery("");
+    }
+  };
+
   const userInitials = user?.userName
     ? user.userName
         .split(" ")
@@ -115,10 +192,12 @@ const Navbar = () => {
         .slice(0, 2)
     : isAdmin ? "AD" : "NV";
 
+  const isHeaderHidden = hideOnMobile && !mobileMenuOpen;
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 bg-[#09090b]/90 backdrop-blur-lg border-b border-neutral-800 transition-transform duration-300 ease-in-out ${
-        hideOnMobile ? "-translate-y-full md:translate-y-0" : "translate-y-0"
+        isHeaderHidden ? "-translate-y-full md:translate-y-0" : ""
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -128,6 +207,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-8">
             <Link
               to={isAdmin ? "/seller/dashboard" : "/"}
+              onClick={() => setMobileMenuOpen(false)}
               className="group flex items-center space-x-2 py-1"
             >
               <span className="text-xl sm:text-2xl font-extrabold tracking-widest uppercase font-['Syne',sans-serif] text-white group-hover:text-neutral-300 transition-colors flex items-center">
@@ -408,144 +488,399 @@ const Navbar = () => {
               </Link>
             )}
 
-            {/* Mobile Menu Toggle Button */}
-            <button
+            {/* Mobile Menu Animated Hamburger Button */}
+            <AnimatedHamburger
+              isOpen={mobileMenuOpen}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2.5 text-neutral-300 hover:text-white border border-neutral-800 bg-neutral-900 rounded-xl active:scale-90 transition-all duration-200"
-              title="Toggle Menu"
-            >
-              <div className="relative w-5 h-5 flex items-center justify-center">
-                <HiOutlineX
-                  className={`text-xl absolute transition-all duration-300 ${
-                    mobileMenuOpen ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-50"
-                  }`}
-                />
-                <HiOutlineMenu
-                  className={`text-xl absolute transition-all duration-300 ${
-                    mobileMenuOpen ? "opacity-0 rotate-90 scale-50" : "opacity-100 rotate-0 scale-100"
-                  }`}
-                />
-              </div>
-            </button>
+            />
           </div>
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Full-Screen Mobile Menu Overlay for Both Buyer and Admin */}
       <div
-        className={`md:hidden border-t border-neutral-800 bg-[#09090b]/98 backdrop-blur-2xl px-6 transition-all duration-300 ease-in-out overflow-hidden ${
+        className={`md:hidden fixed inset-0 z-40 bg-[#09090b]/98 backdrop-blur-3xl transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col justify-between pt-24 pb-8 px-5 sm:px-6 overflow-y-auto ${
           mobileMenuOpen
-            ? "max-h-[85vh] opacity-100 pt-6 pb-10 translate-y-0 pointer-events-auto"
-            : "max-h-0 opacity-0 pt-0 pb-0 -translate-y-3 pointer-events-none"
-        } space-y-4 overflow-y-auto`}
+            ? "opacity-100 translate-y-0 pointer-events-auto visible"
+            : "opacity-0 -translate-y-4 pointer-events-none invisible"
+        }`}
+        style={{ minHeight: "100dvh" }}
       >
-        {/* Vertical Menu List */}
-        <nav className="flex flex-col divide-y divide-neutral-800/80 border-b border-neutral-800 text-sm uppercase tracking-wider font-semibold">
+        {/* Ambient Top Glow */}
+        <div
+          className={`pointer-events-none absolute -top-16 -right-16 w-72 h-72 rounded-full blur-[100px] transition-opacity duration-700 ${
+            isAdmin ? "bg-amber-500/15" : "bg-white/10"
+          }`}
+        />
+
+        {/* Top Scrollable Navigation Container */}
+        <div className="space-y-4 relative z-10">
           {isAdmin ? (
+            /* ================= ADMIN MOBILE FULL SCREEN CONTENT ================= */
             <>
-              <Link
-                to="/seller/dashboard"
-                className="flex items-center justify-between py-4 px-2.5 text-neutral-200 hover:text-white transition-colors active:bg-neutral-900/50 rounded-xl"
-              >
+              {/* Admin Profile Banner Card */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-[#141418] to-[#121215] border border-amber-900/40 flex items-center justify-between shadow-lg">
                 <div className="flex items-center space-x-3.5">
-                  <HiOutlineSparkles className="text-xl text-amber-400" />
-                  <span>Admin Dashboard</span>
+                  <div className="w-11 h-11 rounded-xl bg-amber-400 text-black font-extrabold text-sm flex items-center justify-center font-['Syne',sans-serif] shadow-md">
+                    {userInitials}
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <p className="text-sm font-bold text-white font-['Syne',sans-serif]">
+                        {user?.userName || "Administrator"}
+                      </p>
+                      <span className="text-[9px] uppercase font-mono tracking-wider px-2 py-0.5 rounded-md bg-amber-400/20 text-amber-300 border border-amber-500/30 font-bold">
+                        ADMIN
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-neutral-400 font-mono truncate max-w-[210px]">
+                      {user?.email}
+                    </p>
+                  </div>
                 </div>
-                <HiOutlineChevronRight className="text-neutral-600 text-base" />
-              </Link>
+              </div>
 
-              <Link
-                to="/seller/orders"
-                className="flex items-center justify-between py-4 px-2.5 text-neutral-200 hover:text-white transition-colors active:bg-neutral-900/50 rounded-xl"
-              >
-                <div className="flex items-center space-x-3.5">
-                  <HiOutlineClipboardList className="text-xl text-neutral-400" />
-                  <span>Customer Orders</span>
-                </div>
-                <HiOutlineChevronRight className="text-neutral-600 text-base" />
-              </Link>
+              {/* Admin Menu Grid / Cards */}
+              <nav className="flex flex-col space-y-2 pt-1">
+                {/* Dashboard Overview */}
+                <Link
+                  to="/seller/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                    location.pathname === "/seller/dashboard"
+                      ? "bg-neutral-900/90 border-white text-white shadow-md"
+                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                      <HiOutlineSparkles className="text-lg" />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase font-extrabold tracking-wider">Dashboard Overview</p>
+                      <p className="text-[10px] text-neutral-400 font-normal">Sales, analytics & stock levels</p>
+                    </div>
+                  </div>
+                  <HiOutlineChevronRight className="text-neutral-500 text-sm" />
+                </Link>
 
-              <Link
-                to="/seller/coupons"
-                className="flex items-center justify-between py-4 px-2.5 text-neutral-200 hover:text-white transition-colors active:bg-neutral-900/50 rounded-xl"
-              >
-                <div className="flex items-center space-x-3.5">
-                  <HiOutlineTag className="text-xl text-neutral-400" />
-                  <span>Coupons & Offers</span>
-                </div>
-                <HiOutlineChevronRight className="text-neutral-600 text-base" />
-              </Link>
+                {/* Customer Orders */}
+                <Link
+                  to="/seller/orders"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                    location.pathname === "/seller/orders"
+                      ? "bg-neutral-900/90 border-white text-white shadow-md"
+                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-blue-400/10 border border-blue-400/30 flex items-center justify-center text-blue-400">
+                      <HiOutlineClipboardList className="text-lg" />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase font-extrabold tracking-wider">Customer Orders</p>
+                      <p className="text-[10px] text-neutral-400 font-normal">Manage shipments & discount transparency</p>
+                    </div>
+                  </div>
+                  <HiOutlineChevronRight className="text-neutral-500 text-sm" />
+                </Link>
 
-              <Link
-                to="/profile"
-                className="flex items-center justify-between py-4 px-2.5 text-neutral-200 hover:text-white transition-colors active:bg-neutral-900/50 rounded-xl"
-              >
-                <div className="flex items-center space-x-3.5">
-                  <HiOutlineUser className="text-xl text-neutral-400" />
-                  <span>Admin Profile</span>
-                </div>
-                <HiOutlineChevronRight className="text-neutral-600 text-base" />
-              </Link>
+                {/* Custom Coupons & Promotional Offers (Prominently featured in Dropdown menu) */}
+                <Link
+                  to="/seller/coupons"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                    location.pathname === "/seller/coupons"
+                      ? "bg-neutral-900/90 border-amber-400/60 text-white shadow-md"
+                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-400/10 border border-emerald-400/30 flex items-center justify-center text-emerald-400">
+                      <HiOutlineTag className="text-lg" />
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <p className="text-xs uppercase font-extrabold tracking-wider">Custom Coupons</p>
+                        <span className="text-[9px] uppercase font-mono px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                          Active
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-neutral-400 font-normal">Create discount codes & promotional rules</p>
+                    </div>
+                  </div>
+                  <HiOutlineChevronRight className="text-neutral-500 text-sm" />
+                </Link>
+
+                {/* Add New Piece */}
+                <Link
+                  to="/seller/add-product"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                    location.pathname === "/seller/add-product"
+                      ? "bg-neutral-900/90 border-white text-white shadow-md"
+                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white">
+                      <HiOutlinePlus className="text-lg" />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase font-extrabold tracking-wider">Add New Piece</p>
+                      <p className="text-[10px] text-neutral-400 font-normal">Upload luxury inventory & media</p>
+                    </div>
+                  </div>
+                  <HiOutlineChevronRight className="text-neutral-500 text-sm" />
+                </Link>
+
+                {/* Admin Profile */}
+                <Link
+                  to="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                    location.pathname === "/profile"
+                      ? "bg-neutral-900/90 border-white text-white shadow-md"
+                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-purple-400/10 border border-purple-400/30 flex items-center justify-center text-purple-400">
+                      <HiOutlineUser className="text-lg" />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase font-extrabold tracking-wider">Admin Profile</p>
+                      <p className="text-[10px] text-neutral-400 font-normal">Account settings & credentials</p>
+                    </div>
+                  </div>
+                  <HiOutlineChevronRight className="text-neutral-500 text-sm" />
+                </Link>
+
+                {/* Preview Customer Storefront */}
+                <Link
+                  to="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between p-3.5 rounded-2xl border border-neutral-800/70 bg-[#121215]/50 hover:bg-neutral-900 text-neutral-400 hover:text-white transition-all active:scale-[0.98]"
+                >
+                  <div className="flex items-center space-x-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-neutral-800/60 border border-neutral-700/60 flex items-center justify-center text-neutral-300">
+                      <HiOutlineEye className="text-lg" />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase font-bold tracking-wider">Customer Storefront</p>
+                      <p className="text-[10px] text-neutral-500 font-normal">Preview customer shopping experience</p>
+                    </div>
+                  </div>
+                  <HiOutlineChevronRight className="text-neutral-600 text-sm" />
+                </Link>
+              </nav>
             </>
           ) : (
+            /* ================= BUYER / PUBLIC MOBILE FULL SCREEN CONTENT ================= */
             <>
-              <Link
-                to="/"
-                className="flex items-center justify-between py-4 px-2.5 text-neutral-200 hover:text-white transition-colors active:bg-neutral-900/50 rounded-xl"
-              >
-                <div className="flex items-center space-x-3.5">
-                  <HiOutlineHome className="text-xl text-neutral-400" />
-                  <span>Home</span>
-                </div>
-                <HiOutlineChevronRight className="text-neutral-600 text-base" />
-              </Link>
+              {/* Luxury Search Bar */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search luxury catalog..."
+                  value={mobileSearchQuery}
+                  onChange={(e) => setMobileSearchQuery(e.target.value)}
+                  onKeyDown={handleMobileSearch}
+                  className="w-full bg-[#121215] text-xs text-neutral-200 pl-10 pr-4 py-3.5 rounded-2xl border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-500 font-medium shadow-inner"
+                />
+                <HiOutlineSearch className="absolute left-3.5 top-4 text-neutral-400 text-base" />
+              </div>
 
-              {isAuthenticated && (
-                <>
-                  <Link
-                    to="/my-orders"
-                    className="flex items-center justify-between py-4 px-2.5 text-neutral-200 hover:text-white transition-colors active:bg-neutral-900/50 rounded-xl"
-                  >
-                    <div className="flex items-center space-x-3.5">
-                      <HiOutlineClipboardList className="text-xl text-neutral-400" />
-                      <span>My Orders</span>
-                    </div>
-                    <HiOutlineChevronRight className="text-neutral-600 text-base" />
-                  </Link>
+              {/* Quick Bag & Wishlist Access Grid */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <Link
+                  to="/cart"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-3.5 rounded-2xl bg-[#121215] border border-neutral-800/90 flex items-center justify-between hover:border-neutral-700 active:scale-95 transition-all shadow-sm"
+                >
+                  <div className="flex items-center space-x-2.5">
+                    <HiOutlineShoppingBag className="text-lg text-white" />
+                    <span className="text-xs uppercase font-extrabold tracking-wider text-neutral-200">Bag</span>
+                  </div>
+                  {cartCount > 0 ? (
+                    <span className="w-5 h-5 rounded-full bg-white text-black text-[10px] font-extrabold flex items-center justify-center font-mono shadow">
+                      {cartCount}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-mono text-neutral-500">0</span>
+                  )}
+                </Link>
 
-                  <Link
-                    to="/profile"
-                    className="flex items-center justify-between py-4 px-2.5 text-neutral-200 hover:text-white transition-colors active:bg-neutral-900/50 rounded-xl"
-                  >
-                    <div className="flex items-center space-x-3.5">
-                      <HiOutlineUser className="text-xl text-neutral-400" />
-                      <span>Profile Settings</span>
+                <Link
+                  to="/wishlist"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-3.5 rounded-2xl bg-[#121215] border border-neutral-800/90 flex items-center justify-between hover:border-neutral-700 active:scale-95 transition-all shadow-sm"
+                >
+                  <div className="flex items-center space-x-2.5">
+                    <HiOutlineHeart className="text-lg text-rose-400" />
+                    <span className="text-xs uppercase font-extrabold tracking-wider text-neutral-200">Saved</span>
+                  </div>
+                  {wishlistCount > 0 ? (
+                    <span className="w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold flex items-center justify-center font-mono shadow">
+                      {wishlistCount}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-mono text-neutral-500">0</span>
+                  )}
+                </Link>
+              </div>
+
+              {/* Buyer Navigation Links */}
+              <nav className="flex flex-col space-y-2 pt-1">
+                {/* Home */}
+                <Link
+                  to="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                    location.pathname === "/"
+                      ? "bg-neutral-900/90 border-white text-white shadow-md"
+                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white">
+                      <HiOutlineHome className="text-lg" />
                     </div>
-                    <HiOutlineChevronRight className="text-neutral-600 text-base" />
-                  </Link>
-                </>
-              )}
+                    <div>
+                      <p className="text-xs uppercase font-extrabold tracking-wider">Home</p>
+                      <p className="text-[10px] text-neutral-400 font-normal">Curated collections & featured runway</p>
+                    </div>
+                  </div>
+                  <HiOutlineChevronRight className="text-neutral-500 text-sm" />
+                </Link>
+
+                {/* Shop Catalog */}
+                <Link
+                  to="/shop"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                    location.pathname === "/shop"
+                      ? "bg-neutral-900/90 border-white text-white shadow-md"
+                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-neutral-800/80 border border-neutral-700/80 flex items-center justify-center text-neutral-200">
+                      <HiOutlineShoppingBag className="text-lg" />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase font-extrabold tracking-wider">Shop Products</p>
+                      <p className="text-[10px] text-neutral-400 font-normal">All luxury apparel & new drops</p>
+                    </div>
+                  </div>
+                  <HiOutlineChevronRight className="text-neutral-500 text-sm" />
+                </Link>
+
+                {isAuthenticated && (
+                  <>
+                    {/* My Orders */}
+                    <Link
+                      to="/my-orders"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                        location.pathname === "/my-orders"
+                          ? "bg-neutral-900/90 border-white text-white shadow-md"
+                          : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3.5">
+                        <div className="w-9 h-9 rounded-xl bg-blue-400/10 border border-blue-400/30 flex items-center justify-center text-blue-400">
+                          <HiOutlineClipboardList className="text-lg" />
+                        </div>
+                        <div>
+                          <p className="text-xs uppercase font-extrabold tracking-wider">My Orders</p>
+                          <p className="text-[10px] text-neutral-400 font-normal">Track orders & discount invoices</p>
+                        </div>
+                      </div>
+                      <HiOutlineChevronRight className="text-neutral-500 text-sm" />
+                    </Link>
+
+                    {/* Profile */}
+                    <Link
+                      to="/profile"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                        location.pathname === "/profile"
+                          ? "bg-neutral-900/90 border-white text-white shadow-md"
+                          : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3.5">
+                        <div className="w-9 h-9 rounded-xl bg-purple-400/10 border border-purple-400/30 flex items-center justify-center text-purple-400">
+                          <HiOutlineUser className="text-lg" />
+                        </div>
+                        <div>
+                          <p className="text-xs uppercase font-extrabold tracking-wider">Profile Settings</p>
+                          <p className="text-[10px] text-neutral-400 font-normal">Manage addresses & account security</p>
+                        </div>
+                      </div>
+                      <HiOutlineChevronRight className="text-neutral-500 text-sm" />
+                    </Link>
+                  </>
+                )}
+              </nav>
             </>
           )}
-        </nav>
+        </div>
 
-        {/* Action Auth Buttons */}
-        <div className="pt-2">
+        {/* Bottom Section: Theme Switcher & Auth Actions */}
+        <div className="pt-6 space-y-3 relative z-10 border-t border-neutral-800/80">
+          {/* Day / Night Theme Switcher */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="w-full flex items-center justify-between p-3 rounded-2xl border border-neutral-800/80 bg-[#121215]/80 hover:bg-neutral-900 transition-colors text-left active:scale-[0.98]"
+          >
+            <div className="flex items-center space-x-3">
+              {isDarkMode ? (
+                <div className="w-8 h-8 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-300">
+                  <HiOutlineSun className="text-base" />
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded-xl bg-blue-400/10 border border-blue-400/30 flex items-center justify-center text-blue-300">
+                  <HiOutlineMoon className="text-base" />
+                </div>
+              )}
+              <div>
+                <p className="text-[11px] font-extrabold text-white uppercase tracking-wider">Visual Theme</p>
+                <p className="text-[10px] text-neutral-400">
+                  {isDarkMode ? "Day Mode (White Theme)" : "Night Mode (Dark Theme)"}
+                </p>
+              </div>
+            </div>
+            <span className="text-[9px] font-mono px-2 py-1 rounded bg-neutral-800 text-neutral-300 border border-neutral-700">
+              Switch
+            </span>
+          </button>
+
+          {/* Auth Action Buttons */}
           {isAuthenticated ? (
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-2xl border border-rose-900/40 bg-rose-950/20 text-rose-400 text-xs uppercase tracking-wider font-bold hover:bg-rose-950/40 transition-colors active:scale-98"
-            >
-              <HiOutlineLogout className="text-lg" />
-              <span>Log Out</span>
-            </button>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-2xl border border-rose-900/50 bg-rose-950/20 text-rose-400 text-xs uppercase tracking-wider font-extrabold hover:bg-rose-950/40 transition-colors active:scale-[0.98]"
+              >
+                <HiOutlineLogout className="text-base" />
+                <span>Log Out</span>
+              </button>
+            </div>
           ) : (
-            <Link
-              to="/login"
-              className="block w-full text-center text-xs uppercase tracking-wider font-extrabold bg-white text-black py-4 rounded-2xl shadow-lg hover:bg-neutral-200 transition-colors active:scale-98"
-            >
-              Sign In / Register
-            </Link>
+            <div className="space-y-2">
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block w-full text-center text-xs uppercase tracking-wider font-extrabold bg-white text-black py-3.5 rounded-2xl shadow-xl hover:bg-neutral-200 transition-colors active:scale-[0.98]"
+              >
+                Sign In to Account
+              </Link>
+            </div>
           )}
         </div>
       </div>
