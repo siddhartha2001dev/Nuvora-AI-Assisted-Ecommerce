@@ -10,6 +10,7 @@ import {
   HiOutlineCheckCircle,
   HiOutlineTruck,
   HiOutlineXCircle,
+  HiOutlineTag,
 } from "react-icons/hi";
 
 const getStatusBadge = (status) => {
@@ -161,7 +162,7 @@ const MyOrders = () => {
                       alt={product.title || "Product"}
                       className="w-16 h-20 sm:w-20 sm:h-24 object-cover rounded-2xl bg-neutral-900 border border-neutral-800 shrink-0"
                     />
-                    <div className="space-y-1 min-w-0 flex-1">
+                    <div className="space-y-1.5 min-w-0 flex-1">
                       <h4 className="text-xs sm:text-sm font-semibold text-white break-words line-clamp-2">
                         {product.title || "Essential Piece"}
                       </h4>
@@ -182,6 +183,17 @@ const MyOrders = () => {
                         </div>
                       )}
 
+                      {/* Applied Coupon Badge if present */}
+                      {(order.couponCode || order.couponDiscount > 0) && (
+                        <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
+                          <HiOutlineTag className="text-xs shrink-0" />
+                          <span>
+                            Coupon Applied: <strong className="text-white uppercase">{order.couponCode}</strong>
+                            {order.couponDiscount > 0 && ` (-₹${order.couponDiscount.toLocaleString()})`}
+                          </span>
+                        </div>
+                      )}
+
                       <p className="text-xs text-neutral-400 font-mono">
                         Qty: {order.quantity} • Unit Price: ₹{((order.totalPrice || 0) / (order.quantity || 1)).toLocaleString()}
                       </p>
@@ -195,9 +207,21 @@ const MyOrders = () => {
                     <span className="text-[9px] uppercase font-mono text-neutral-500 block">
                       TOTAL ({order.paymentMethod || "COD"})
                     </span>
-                    <p className="text-base sm:text-xl font-extrabold text-white font-mono">
-                      ₹{order.totalPrice?.toLocaleString()}
-                    </p>
+                    <div className="space-y-0.5">
+                      <p className="text-base sm:text-xl font-extrabold text-white font-mono">
+                        ₹{order.totalPrice?.toLocaleString()}
+                      </p>
+                      {order.couponDiscount > 0 && (
+                        <div className="flex sm:justify-end items-center space-x-2 font-mono text-[11px]">
+                          <span className="text-neutral-500 line-through">
+                            ₹{(order.originalPrice || (order.totalPrice + order.couponDiscount))?.toLocaleString()}
+                          </span>
+                          <span className="text-emerald-400 font-semibold">
+                            Saved ₹{order.couponDiscount?.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

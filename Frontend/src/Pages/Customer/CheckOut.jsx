@@ -206,20 +206,60 @@ const CheckOut = () => {
       );
     }
 
+    // Prepare items with distributed coupon discounts across all items
+    const totalCouponDiscount = appliedCoupon?.discountAmount || 0;
+    const couponCode = appliedCoupon?.code || "";
+
+    let remainingCouponDiscount = totalCouponDiscount;
+    const preparedItems = cartItems.map((item, index) => {
+      const prod = item.productId || {};
+      const prodId = prod._id || item.productId;
+      const qty = item.quantity || 1;
+      const pricePerUnit = prod.discountPrice > 0 ? prod.discountPrice : (prod.price || 0);
+      const itemSubtotal = pricePerUnit * qty;
+
+      let itemDiscount = 0;
+      if (totalCouponDiscount > 0 && subtotal > 0) {
+        if (index === cartItems.length - 1) {
+          itemDiscount = Math.max(0, remainingCouponDiscount);
+        } else {
+          itemDiscount = Math.min(itemSubtotal, Math.round((itemSubtotal / subtotal) * totalCouponDiscount));
+          remainingCouponDiscount = Math.max(0, remainingCouponDiscount - itemDiscount);
+        }
+      }
+
+      const itemTotalPrice = Math.max(0, itemSubtotal - itemDiscount);
+
+      return {
+        ...item,
+        productId: prodId,
+        quantity: qty,
+        selectedColor: item.selectedColor || "",
+        selectedSize: item.selectedSize || "",
+        cartItemId: item._id,
+        originalPrice: itemSubtotal,
+        couponCode: itemDiscount > 0 ? couponCode : (totalCouponDiscount > 0 ? couponCode : ""),
+        couponDiscount: itemDiscount,
+        totalPrice: itemTotalPrice,
+      };
+    });
+
     // 2. Process Cash on Delivery (COD) order
     if (paymentMethod === "COD") {
       try {
-        for (const item of cartItems) {
-          const prodId = item.productId?._id || item.productId;
+        for (const item of preparedItems) {
           await dispatch(
             placeOrder({
-              productId: prodId,
-              quantity: item.quantity || 1,
-              selectedColor: item.selectedColor || "",
-              selectedSize: item.selectedSize || "",
-              cartItemId: item._id,
+              productId: item.productId,
+              quantity: item.quantity,
+              selectedColor: item.selectedColor,
+              selectedSize: item.selectedSize,
+              cartItemId: item.cartItemId,
               address: fullAddress,
               paymentMethod: "COD",
+              originalPrice: item.originalPrice,
+              couponCode: item.couponCode,
+              couponDiscount: item.couponDiscount,
             })
           ).unwrap();
         }
@@ -294,8 +334,10 @@ const CheckOut = () => {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              cartItems: cartItems,
+              cartItems: preparedItems,
               address: fullAddress,
+              couponCode: couponCode,
+              couponDiscount: totalCouponDiscount,
             });
 
             toast.success("Payment Successful! Order Placed 🎉");

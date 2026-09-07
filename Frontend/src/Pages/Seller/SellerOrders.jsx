@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchSellerOrders,
@@ -11,6 +11,9 @@ import {
   HiOutlineShoppingBag,
   HiOutlineLocationMarker,
   HiOutlineUser,
+  HiOutlineTag,
+  HiOutlineCurrencyRupee,
+  HiOutlineFilter,
 } from "react-icons/hi";
 
 const SellerOrders = () => {
@@ -18,6 +21,8 @@ const SellerOrders = () => {
   const { sellerOrders: orders, loading: isLoading, actionLoading: isUpdating } = useSelector(
     (state) => state.orders
   );
+
+  const [filterType, setFilterType] = useState("all"); // "all", "with_coupon", "no_coupon"
 
   useEffect(() => {
     dispatch(fetchSellerOrders());
@@ -31,6 +36,17 @@ const SellerOrders = () => {
       toast.error(typeof err === "string" ? err : "Failed to update order status");
     }
   };
+
+  const couponOrdersCount = orders.filter((o) => o.couponCode || o.couponDiscount > 0).length;
+  const standardOrdersCount = orders.length - couponOrdersCount;
+  const totalDiscountsGiven = orders.reduce((acc, o) => acc + (o.couponDiscount || 0), 0);
+
+  const filteredOrders = orders.filter((order) => {
+    const hasCoupon = Boolean(order.couponCode || order.couponDiscount > 0);
+    if (filterType === "with_coupon") return hasCoupon;
+    if (filterType === "no_coupon") return !hasCoupon;
+    return true;
+  });
 
   if (isLoading && orders.length === 0) {
     return (
@@ -50,14 +66,83 @@ const SellerOrders = () => {
         <div className="flex-1 space-y-6 sm:space-y-8 min-w-0">
           <div className="border-b border-neutral-800 pb-6">
             <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-neutral-500">
-              FULFILLMENT PORTAL
+              FULFILLMENT & ORDER AUDIT
             </span>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-['Syne',sans-serif]">
               Customer Orders ({orders.length})
             </h1>
             <p className="text-xs text-neutral-400 mt-1">
-              Track incoming customer purchases and view buyer dispatch addresses.
+              Track incoming customer purchases, view buyer coupons & discounts applied, and manage fulfillment.
             </p>
+          </div>
+
+          {/* Admin Metrics Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-4 rounded-2xl bg-[#121215] border border-neutral-800 space-y-1">
+              <span className="text-[10px] font-mono uppercase text-neutral-500">Total Orders</span>
+              <p className="text-xl sm:text-2xl font-extrabold text-white font-mono">{orders.length}</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#121215] border border-neutral-800 space-y-1">
+              <span className="text-[10px] font-mono uppercase text-neutral-500">Pending</span>
+              <p className="text-xl sm:text-2xl font-extrabold text-amber-400 font-mono">
+                {orders.filter((o) => o.orderStatus === "Placed").length}
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#121215] border border-neutral-800 space-y-1">
+              <span className="text-[10px] font-mono uppercase text-neutral-500">Coupon Orders</span>
+              <p className="text-xl sm:text-2xl font-extrabold text-emerald-400 font-mono">
+                {couponOrdersCount}
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#121215] border border-neutral-800 space-y-1">
+              <span className="text-[10px] font-mono uppercase text-neutral-500">Discounts Given</span>
+              <p className="text-xl sm:text-2xl font-extrabold text-white font-mono flex items-center">
+                ₹{totalDiscountsGiven.toLocaleString()}
+              </p>
+            </div>
+          </div>
+
+          {/* Filter Tabs */}
+          <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-[#121215] border border-neutral-800">
+            <button
+              type="button"
+              onClick={() => setFilterType("all")}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                filterType === "all"
+                  ? "bg-white text-black shadow-md"
+                  : "text-neutral-400 hover:text-white"
+              }`}
+            >
+              All Orders ({orders.length})
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setFilterType("with_coupon")}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
+                filterType === "with_coupon"
+                  ? "bg-emerald-500 text-black shadow-md font-extrabold"
+                  : "text-emerald-400 hover:text-emerald-300"
+              }`}
+            >
+              <HiOutlineTag className="text-sm" />
+              <span>With Coupon ({couponOrdersCount})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setFilterType("no_coupon")}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                filterType === "no_coupon"
+                  ? "bg-white text-black shadow-md"
+                  : "text-neutral-400 hover:text-white"
+              }`}
+            >
+              Standard Orders ({standardOrdersCount})
+            </button>
           </div>
 
           {orders.length === 0 ? (
@@ -70,26 +155,58 @@ const SellerOrders = () => {
                 Customer orders for your listed pieces will appear here in real-time.
               </p>
             </div>
+          ) : filteredOrders.length === 0 ? (
+            <div className="text-center py-16 bg-[#121215] border border-neutral-800/80 rounded-3xl space-y-2">
+              <HiOutlineFilter className="text-3xl text-neutral-600 mx-auto" />
+              <p className="text-sm font-semibold text-white">No orders match this filter.</p>
+              <button
+                type="button"
+                onClick={() => setFilterType("all")}
+                className="text-xs text-neutral-400 underline hover:text-white pt-2 cursor-pointer"
+              >
+                View all orders
+              </button>
+            </div>
           ) : (
             <div className="space-y-4 sm:space-y-6">
-              {orders.map((order) => {
+              {filteredOrders.map((order) => {
                 const product = order.productId || {};
                 const buyer = order.buyerId || {};
+                const hasCoupon = Boolean(order.couponCode || order.couponDiscount > 0);
+                const originalVal = order.originalPrice || (order.totalPrice + (order.couponDiscount || 0));
 
                 return (
                   <div
                     key={order._id}
-                    className="bg-[#121215] border border-neutral-800/80 rounded-3xl p-4 sm:p-7 space-y-4 sm:space-y-6 overflow-hidden min-w-0"
+                    className={`bg-[#121215] border rounded-3xl p-4 sm:p-7 space-y-4 sm:space-y-6 overflow-hidden min-w-0 transition-all ${
+                      hasCoupon
+                        ? "border-emerald-500/40 shadow-lg shadow-emerald-950/20 ring-1 ring-emerald-500/20"
+                        : "border-neutral-800/80"
+                    }`}
                   >
                     {/* Order Top Bar */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-800 pb-4">
-                      <div className="min-w-0">
-                        <span className="text-[9px] uppercase font-mono text-neutral-500 block">
-                          ORDER NO.
-                        </span>
-                        <h3 className="text-xs sm:text-base font-bold font-mono text-white truncate max-w-[220px] sm:max-w-none" title={order._id}>
-                          {order._id}
-                        </h3>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
+                        <div className="min-w-0">
+                          <span className="text-[9px] uppercase font-mono text-neutral-500 block">
+                            ORDER NO.
+                          </span>
+                          <h3 className="text-xs sm:text-base font-bold font-mono text-white truncate max-w-[200px] sm:max-w-none" title={order._id}>
+                            {order._id}
+                          </h3>
+                        </div>
+
+                        {/* Prominent Coupon Indicator Badge for Admin */}
+                        {hasCoupon ? (
+                          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-extrabold shadow-sm">
+                            <HiOutlineTag className="text-sm shrink-0" />
+                            <span>COUPON: {order.couponCode || "DISCOUNT"} (-₹{order.couponDiscount?.toLocaleString()})</span>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] px-2.5 py-0.5 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-500 font-mono">
+                            Standard (No Coupon)
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex items-center space-x-2.5 shrink-0">
@@ -110,11 +227,19 @@ const SellerOrders = () => {
 
                     {/* Details Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 text-xs text-neutral-300 min-w-0">
-                      {/* Item Details */}
-                      <div className="space-y-2 min-w-0 p-3.5 rounded-2xl bg-neutral-900/40 border border-neutral-800/60">
-                        <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 block">
-                          ORDERED ITEM
-                        </span>
+                      {/* Item Details & Pricing Breakdown */}
+                      <div className="space-y-2.5 min-w-0 p-4 rounded-2xl bg-neutral-900/40 border border-neutral-800/60">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 block">
+                            ORDERED ITEM & PRICING
+                          </span>
+                          {hasCoupon && (
+                            <span className="text-[10px] font-bold text-emerald-400 font-mono bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded">
+                              Discounted Order
+                            </span>
+                          )}
+                        </div>
+
                         <h4 className="text-sm font-semibold text-white break-words line-clamp-2">
                           {product.title || "Essential Piece"}
                         </h4>
@@ -135,38 +260,76 @@ const SellerOrders = () => {
                           </div>
                         )}
 
-                        <p className="font-mono text-neutral-400">
-                          Quantity: <strong className="text-white">{order.quantity} pcs</strong> • Total:{" "}
-                          <strong className="text-white font-mono">₹{order.totalPrice?.toLocaleString()}</strong> (
-                          {order.paymentMethod})
-                        </p>
+                        {/* Financial breakdown for admin transparency */}
+                        <div className="pt-2 border-t border-neutral-800/80 space-y-1 font-mono text-xs">
+                          <div className="flex justify-between text-neutral-400">
+                            <span>Quantity:</span>
+                            <span className="text-white">{order.quantity} pcs</span>
+                          </div>
+
+                          {hasCoupon && (
+                            <>
+                              <div className="flex justify-between text-neutral-400">
+                                <span>Original Price:</span>
+                                <span className="line-through text-neutral-500">₹{originalVal?.toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between text-emerald-400 font-bold">
+                                <span>Coupon ({order.couponCode}):</span>
+                                <span>-₹{order.couponDiscount?.toLocaleString()}</span>
+                              </div>
+                            </>
+                          )}
+
+                          <div className="flex justify-between items-baseline pt-1 border-t border-neutral-800 text-white font-bold">
+                            <span>Final Total ({order.paymentMethod}):</span>
+                            <span className="text-sm font-extrabold text-white">
+                              ₹{order.totalPrice?.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
                       </div>
 
                       {/* Customer Info & Exact Delivery Address */}
-                      <div className="space-y-2 min-w-0 p-3.5 rounded-2xl bg-neutral-900/40 border border-neutral-800/60">
-                        <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 block">
-                          BUYER & DELIVERY DESTINATION
-                        </span>
-                        
-                        <div className="space-y-1">
-                          <p className="font-semibold text-white flex items-center space-x-1.5 truncate">
-                            <HiOutlineUser className="text-sm text-neutral-400 shrink-0" />
-                            <span className="truncate">{buyer.userName || "Customer"}</span>
-                            {buyer.email && (
-                              <span className="text-[11px] text-neutral-500 font-mono">({buyer.email})</span>
-                            )}
-                          </p>
+                      <div className="space-y-2.5 min-w-0 p-4 rounded-2xl bg-neutral-900/40 border border-neutral-800/60 flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 block">
+                            BUYER & DELIVERY DESTINATION
+                          </span>
+                          
+                          <div className="space-y-1">
+                            <p className="font-semibold text-white flex items-center space-x-1.5 truncate">
+                              <HiOutlineUser className="text-sm text-neutral-400 shrink-0" />
+                              <span className="truncate">{buyer.userName || "Customer"}</span>
+                              {buyer.email && (
+                                <span className="text-[11px] text-neutral-500 font-mono">({buyer.email})</span>
+                              )}
+                            </p>
 
-                          <div className="text-neutral-300 flex items-start space-x-1.5 pt-1">
-                            <HiOutlineLocationMarker className="text-base text-rose-400 mt-0.5 shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <span className="text-[10px] text-neutral-500 uppercase font-mono block">Shipping Address:</span>
-                              <p className="text-xs text-neutral-200 break-words font-medium">
-                                {order.address || "No address provided"}
+                            {buyer.phone && (
+                              <p className="text-[11px] text-neutral-400 font-mono pl-5">
+                                Phone: {buyer.phone}
                               </p>
+                            )}
+
+                            <div className="text-neutral-300 flex items-start space-x-1.5 pt-1">
+                              <HiOutlineLocationMarker className="text-base text-rose-400 mt-0.5 shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <span className="text-[10px] text-neutral-500 uppercase font-mono block">Shipping Address:</span>
+                                <p className="text-xs text-neutral-200 break-words font-medium">
+                                  {order.address || "No address provided"}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
+
+                        {/* Admin audit note */}
+                        {hasCoupon && (
+                          <div className="p-2 rounded-xl bg-emerald-950/40 border border-emerald-800/50 text-[11px] text-emerald-400 flex items-center space-x-1.5">
+                            <HiOutlineTag className="text-xs shrink-0" />
+                            <span>Buyer redeemed coupon <strong className="text-white uppercase">{order.couponCode}</strong></span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

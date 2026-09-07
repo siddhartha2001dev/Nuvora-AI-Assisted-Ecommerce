@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,6 +29,8 @@ import {
   HiOutlineX,
   HiOutlineShare,
   HiOutlineCheck,
+  HiChevronLeft,
+  HiChevronRight,
 } from "react-icons/hi";
 
 /**
@@ -97,6 +99,61 @@ const ProductDetails = () => {
   const [selectedImg, setSelectedImg] = useState(0);
   const [showAiModal, setShowAiModal] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Gallery slider ref & touch helpers
+  const sliderRef = useRef(null);
+
+  const scrollToImage = (index) => {
+    setSelectedImg(index);
+    if (sliderRef.current) {
+      sliderRef.current.scrollTo({
+        left: index * sliderRef.current.clientWidth,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const handlePrevImage = (e) => {
+    if (e) e.stopPropagation();
+    const imgs = product?.images || [];
+    if (!imgs.length) return;
+    const prev = selectedImg === 0 ? imgs.length - 1 : selectedImg - 1;
+    scrollToImage(prev);
+  };
+
+  const handleNextImage = (e) => {
+    if (e) e.stopPropagation();
+    const imgs = product?.images || [];
+    if (!imgs.length) return;
+    const next = selectedImg === imgs.length - 1 ? 0 : selectedImg + 1;
+    scrollToImage(next);
+  };
+
+  const handleSliderScroll = () => {
+    if (!sliderRef.current) return;
+    const { scrollLeft, clientWidth } = sliderRef.current;
+    if (clientWidth > 0) {
+      const newIndex = Math.round(scrollLeft / clientWidth);
+      const imgs = product?.images || [];
+      if (newIndex >= 0 && newIndex < imgs.length && newIndex !== selectedImg) {
+        setSelectedImg(newIndex);
+      }
+    }
+  };
+
+  // Keep slider position aligned on screen resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (sliderRef.current) {
+        sliderRef.current.scrollTo({
+          left: selectedImg * sliderRef.current.clientWidth,
+          behavior: "auto",
+        });
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [selectedImg]);
 
   // Variant selection states (Optional)
   const [selectedColor, setSelectedColor] = useState("");
@@ -282,15 +339,65 @@ const ProductDetails = () => {
 
       {/* Main Details Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-        {/* Gallery */}
+        {/* Gallery with Mobile Touch-Swipe Carousel & Desktop Controls */}
         <div className="space-y-3 sm:space-y-4">
           <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-[#121215] border border-neutral-800 group">
-            <img
-              src={images[selectedImg] || images[0]}
-              alt={product.title}
-              className="w-full h-full object-cover object-center"
-            />
-            {/* Image Overlay Actions: Share & Wishlist */}
+            {/* Horizontal Scroll Snap Image Slider Container */}
+            <div
+              ref={sliderRef}
+              onScroll={handleSliderScroll}
+              className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scroll-smooth touch-pan-x [&::-webkit-scrollbar]:hidden select-none"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {images.length > 0 ? (
+                images.map((img, idx) => (
+                  <div
+                    key={idx}
+                    className="min-w-full w-full h-full flex-shrink-0 snap-center relative"
+                  >
+                    <img
+                      src={img}
+                      alt={`${product.title} - View ${idx + 1}`}
+                      className="w-full h-full object-cover object-center pointer-events-none"
+                      loading={idx === 0 ? "eager" : "lazy"}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="min-w-full w-full h-full flex-shrink-0 snap-center relative">
+                  <img
+                    src=""
+                    alt={product.title}
+                    className="w-full h-full object-cover object-center"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Left / Right Chevron Navigation Buttons */}
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={handlePrevImage}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-neutral-700/60 text-white transition-all shadow-xl opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 z-10 cursor-pointer"
+                  aria-label="Previous image"
+                >
+                  <HiChevronLeft className="text-xl sm:text-2xl text-white" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleNextImage}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-neutral-700/60 text-white transition-all shadow-xl opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 z-10 cursor-pointer"
+                  aria-label="Next image"
+                >
+                  <HiChevronRight className="text-xl sm:text-2xl text-white" />
+                </button>
+              </>
+            )}
+
+            {/* Top-Right Image Overlay Actions: Share & Wishlist */}
             <div className="absolute top-4 right-4 flex items-center space-x-2 z-10">
               <button
                 type="button"
@@ -319,9 +426,37 @@ const ProductDetails = () => {
               </button>
             </div>
 
+            {/* Bottom-Right Slide Counter Badge (e.g. 1 / 4) */}
+            {images.length > 1 && (
+              <div className="absolute bottom-4 right-4 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-neutral-700/60 text-white font-mono text-[11px] font-bold shadow-lg pointer-events-none z-10 flex items-center space-x-1">
+                <span>{selectedImg + 1}</span>
+                <span className="text-neutral-500">/</span>
+                <span className="text-neutral-400">{images.length}</span>
+              </div>
+            )}
+
+            {/* Bottom-Center Interactive Pagination Dots */}
+            {images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center space-x-1.5 z-10 pointer-events-auto bg-black/40 backdrop-blur-sm px-2.5 py-1 rounded-full border border-neutral-800/80">
+                {images.map((_, dotIdx) => (
+                  <button
+                    key={dotIdx}
+                    type="button"
+                    onClick={() => scrollToImage(dotIdx)}
+                    className={`transition-all duration-300 rounded-full cursor-pointer ${
+                      selectedImg === dotIdx
+                        ? "w-5 h-1.5 bg-white shadow-sm"
+                        : "w-1.5 h-1.5 bg-neutral-500 hover:bg-neutral-300"
+                    }`}
+                    aria-label={`Go to slide ${dotIdx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+
             {/* Out of Stock Overlay Ribbon */}
             {availableStock === 0 && (
-              <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center pointer-events-none">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center pointer-events-none z-20">
                 <span className="text-sm font-extrabold uppercase tracking-widest text-white px-6 py-2 rounded-full border border-rose-700 bg-rose-950/80 shadow-2xl font-mono">
                   Out of Stock
                 </span>
@@ -331,16 +466,20 @@ const ProductDetails = () => {
 
           {/* Thumbnails */}
           {images.length > 1 && (
-            <div className="flex space-x-2.5 sm:space-x-3 overflow-x-auto pb-1">
+            <div
+              className="flex space-x-2.5 sm:space-x-3 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
               {images.map((img, index) => (
                 <button
                   key={index}
-                  onClick={() => setSelectedImg(index)}
-                  className={`w-16 h-20 sm:w-20 sm:h-24 rounded-2xl overflow-hidden border-2 shrink-0 transition-all ${
+                  onClick={() => scrollToImage(index)}
+                  className={`w-16 h-20 sm:w-20 sm:h-24 rounded-2xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
                     selectedImg === index
-                      ? "border-white shadow-md"
+                      ? "border-white shadow-md scale-102 ring-1 ring-white/30"
                       : "border-neutral-800 opacity-50 hover:opacity-100"
                   }`}
+                  aria-label={`View photo ${index + 1}`}
                 >
                   <img src={img} alt="Thumbnail" className="w-full h-full object-cover" />
                 </button>

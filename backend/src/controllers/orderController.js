@@ -1,13 +1,25 @@
 import orderSchema from "../models/orderSchema.js";
 import productSchema from "../models/productSchema.js";
 import cartSchema from "../models/cartSchema.js";
+import couponSchema from "../models/couponSchema.js";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 
 // 1. Place Order (Buyer)
 export const placeOrder = async (req, res) => {
     try {
-        const { productId, quantity = 1, address, paymentMethod = "COD", selectedColor = "", selectedSize = "", cartItemId } = req.body;
+        const {
+            productId,
+            quantity = 1,
+            address,
+            paymentMethod = "COD",
+            selectedColor = "",
+            selectedSize = "",
+            cartItemId,
+            couponCode = "",
+            couponDiscount = 0,
+            originalPrice
+        } = req.body;
 
         if (!productId) {
             return res.status(400).json({
@@ -41,9 +53,12 @@ export const placeOrder = async (req, res) => {
             });
         }
 
-        // Calculate total price
+        // Calculate pricing with coupon discount
         const pricePerUnit = product.discountPrice > 0 ? product.discountPrice : product.price;
-        const totalPrice = pricePerUnit * qty;
+        const calculatedOriginalPrice = Number(originalPrice) > 0 ? Number(originalPrice) : (pricePerUnit * qty);
+        const discountAmt = Math.max(0, Number(couponDiscount) || 0);
+        const totalPrice = Math.max(0, calculatedOriginalPrice - discountAmt);
+        const cleanCoupon = (couponCode || "").trim().toUpperCase();
 
         // Create Order
         const order = await orderSchema.create({
@@ -52,12 +67,23 @@ export const placeOrder = async (req, res) => {
             quantity: qty,
             selectedColor: selectedColor || "",
             selectedSize: selectedSize || "",
+            originalPrice: calculatedOriginalPrice,
+            couponCode: cleanCoupon,
+            couponDiscount: discountAmt,
             totalPrice,
             address,
             paymentMethod,
             paymentStatus: paymentMethod === "COD" ? "Pending" : "Completed",
             orderStatus: "Placed"
         });
+
+        // Increment coupon usage count if coupon applied
+        if (cleanCoupon && discountAmt > 0) {
+            await couponSchema.findOneAndUpdate(
+                { code: cleanCoupon },
+                { $inc: { usedCount: 1 } }
+            );
+        }
 
         // Reduce product stock
         product.stock -= qty;
@@ -305,7 +331,9 @@ export const verifyRazorpayPayment = async (req, res) => {
             razorpay_payment_id,
             razorpay_signature,
             cartItems,
-            address
+            address,
+            couponCode = "",
+            couponDiscount = 0
         } = req.body;
 
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -343,7 +371,12 @@ export const verifyRazorpayPayment = async (req, res) => {
 
             const qty = Number(item.quantity) || 1;
             const pricePerUnit = product.discountPrice > 0 ? product.discountPrice : product.price;
-            const totalPrice = pricePerUnit * qty;
+            const calculatedOriginalPrice = Number(item.originalPrice) > 0 ? Number(item.originalPrice) : (pricePerUnit * qty);
+            const itemDiscount = Math.max(0, Number(item.couponDiscount) || 0);
+            const totalPrice = Number(item.totalPrice) !== undefined && Number(item.totalPrice) >= 0
+                ? Number(item.totalPrice)
+                : Math.max(0, calculatedOriginalPrice - itemDiscount);
+            const cleanCoupon = (item.couponCode || couponCode || "").trim().toUpperCase();
 
             const order = await orderSchema.create({
                 buyerId: req.userId,
@@ -351,6 +384,9 @@ export const verifyRazorpayPayment = async (req, res) => {
                 quantity: qty,
                 selectedColor: item.selectedColor || "",
                 selectedSize: item.selectedSize || "",
+                originalPrice: calculatedOriginalPrice,
+                couponCode: cleanCoupon,
+                couponDiscount: itemDiscount,
                 totalPrice,
                 address: address || "",
                 paymentMethod: "Razorpay",
@@ -370,6 +406,15 @@ export const verifyRazorpayPayment = async (req, res) => {
             }
 
             createdOrders.push(order);
+        }
+
+        // Increment coupon usedCount if any coupon was applied
+        const topCoupon = (couponCode || "").trim().toUpperCase();
+        if (topCoupon) {
+            await couponSchema.findOneAndUpdate(
+                { code: topCoupon },
+                { $inc: { usedCount: 1 } }
+            );
         }
 
         return res.status(200).json({

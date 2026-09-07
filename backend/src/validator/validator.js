@@ -173,7 +173,27 @@ export const orderValidationSchema = yup.object({
     paymentMethod: yup
         .string()
         .oneOf(["COD", "Razorpay"], "Payment method must be 'COD' or 'Razorpay'")
-        .default("COD")
+        .default("COD"),
+    couponCode: yup
+        .string()
+        .optional()
+        .default(""),
+    couponDiscount: yup
+        .number()
+        .typeError("Coupon discount must be a number")
+        .min(0, "Coupon discount cannot be negative")
+        .optional()
+        .default(0),
+    originalPrice: yup
+        .number()
+        .typeError("Original price must be a number")
+        .min(0, "Original price cannot be negative")
+        .optional()
+        .default(0),
+    cartItemId: yup
+        .string()
+        .optional()
+        .default("")
 });
 
 // 8. Address Validation Schema
