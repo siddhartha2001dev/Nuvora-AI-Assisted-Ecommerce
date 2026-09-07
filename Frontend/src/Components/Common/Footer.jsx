@@ -40,7 +40,7 @@ const Footer = () => {
       style={{ backgroundColor: "#050507", color: "#a3a3a3" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className={`grid grid-cols-1 ${isAdminPanel ? "md:grid-cols-3" : "md:grid-cols-4"} gap-10`}>
+        <div className={`grid grid-cols-1 ${isAdminPanel ? "md:grid-cols-2" : "md:grid-cols-4"} gap-10`}>
           {/* Brand Info Column */}
           <div className="space-y-4 md:col-span-1">
             <Link
@@ -88,24 +88,26 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Customer Hub Links */}
-          <div>
-            <h4 className="text-xs uppercase tracking-widest font-semibold text-white mb-4">
-              Customer Hub
-            </h4>
-            <ul className="space-y-2.5 text-sm">
-              <li>
-                <Link to="/wishlist" className="hover:text-white transition-colors">
-                  My Wishlist
-                </Link>
-              </li>
-              <li>
-                <Link to="/cart" className="hover:text-white transition-colors">
-                  Shopping Bag
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Customer Hub Links (Hidden on Admin Panel) */}
+          {!isAdminPanel && (
+            <div>
+              <h4 className="text-xs uppercase tracking-widest font-semibold text-white mb-4">
+                Customer Hub
+              </h4>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <Link to="/wishlist" className="hover:text-white transition-colors">
+                    My Wishlist
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/cart" className="hover:text-white transition-colors">
+                    Shopping Bag
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
 
           {/* Newsletter Subscription Column (Hidden on Admin Panel) */}
           {!isAdminPanel && (
