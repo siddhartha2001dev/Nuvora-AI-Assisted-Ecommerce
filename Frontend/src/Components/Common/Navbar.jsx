@@ -32,35 +32,35 @@ const AnimatedHamburger = ({ isOpen, onClick }) => {
       onClick={onClick}
       aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
       aria-expanded={isOpen}
-      className={`md:hidden relative w-11 h-11 rounded-2xl flex flex-col items-center justify-center transition-all duration-300 focus:outline-none select-none z-50 ${
+      className={`md:hidden relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-200 focus:outline-none select-none z-50 ${
         isOpen
-          ? "bg-white text-black shadow-[0_0_24px_rgba(255,255,255,0.35)] border border-white"
-          : "bg-[#121215] text-neutral-300 border border-neutral-800 hover:border-neutral-600 active:scale-90"
+          ? "bg-white text-black border border-white shadow-md"
+          : "bg-[#141418] text-neutral-300 border border-neutral-800 hover:border-neutral-700 active:scale-95"
       }`}
     >
-      <div className="w-5 h-4 flex flex-col justify-between items-center relative">
+      <div className="w-5 h-4 relative flex items-center justify-center">
         {/* Top bar */}
         <span
-          className={`h-[2px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] origin-center ${
+          className={`absolute left-0 w-5 h-[2px] rounded-full transition-all duration-300 ease-in-out ${
             isOpen
-              ? "w-5 bg-black absolute top-[7px] rotate-45"
-              : "w-5 bg-neutral-200"
+              ? "top-[7px] rotate-45 bg-black"
+              : "top-0 bg-neutral-200"
           }`}
         />
-        {/* Middle bar with aesthetic luxury asymmetry */}
+        {/* Middle bar */}
         <span
-          className={`h-[2px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`absolute left-0 top-[7px] h-[2px] rounded-full transition-all duration-200 ease-in-out ${
             isOpen
-              ? "w-0 opacity-0 -translate-x-3 pointer-events-none"
-              : "w-3 bg-neutral-400 self-end mr-0.5"
+              ? "w-0 opacity-0"
+              : "w-3.5 opacity-100 bg-neutral-400"
           }`}
         />
         {/* Bottom bar */}
         <span
-          className={`h-[2px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] origin-center ${
+          className={`absolute left-0 w-5 h-[2px] rounded-full transition-all duration-300 ease-in-out ${
             isOpen
-              ? "w-5 bg-black absolute top-[7px] -rotate-45"
-              : "w-5 bg-neutral-200"
+              ? "top-[7px] -rotate-45 bg-black"
+              : "top-[14px] bg-neutral-200"
           }`}
         />
       </div>
@@ -107,11 +107,14 @@ const Navbar = () => {
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     };
   }, [mobileMenuOpen]);
 
@@ -141,7 +144,7 @@ const Navbar = () => {
   // Auto-hide navbar on mobile when scrolling into footer area (disabled when menu is open)
   useEffect(() => {
     const handleScroll = () => {
-      if (window.innerWidth >= 768) {
+      if (window.innerWidth >= 768 || mobileMenuOpen) {
         setHideOnMobile(false);
         return;
       }
@@ -165,7 +168,7 @@ const Navbar = () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleScroll);
     };
-  }, []);
+  }, [mobileMenuOpen]);
 
   const handleLogout = async () => {
     await dispatch(logoutUser());
@@ -196,7 +199,7 @@ const Navbar = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 bg-[#09090b]/90 backdrop-blur-lg border-b border-neutral-800 transition-transform duration-300 ease-in-out ${
+      className={`fixed top-0 left-0 right-0 z-50 bg-[#09090b] border-b border-neutral-800 transition-transform duration-200 ease-in-out ${
         isHeaderHidden ? "-translate-y-full md:translate-y-0" : ""
       }`}
     >
@@ -215,7 +218,7 @@ const Navbar = () => {
                 <span className="w-1.5 h-1.5 rounded-full bg-white ml-1.5 inline-block animate-pulse"></span>
               </span>
               {isAdmin && (
-                <span className="text-[9px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-md bg-amber-950/80 text-amber-300 border border-amber-800/80 hidden sm:inline-block">
+                <span className="text-[9px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-md bg-amber-950 text-amber-300 border border-amber-800 hidden sm:inline-block">
                   ADMIN
                 </span>
               )}
@@ -294,7 +297,7 @@ const Navbar = () => {
                     navigate(`/shop?search=${encodeURIComponent(e.target.value.trim())}`);
                   }
                 }}
-                className="w-full bg-neutral-900/90 text-xs text-neutral-200 pl-9 pr-4 py-2.5 rounded-full border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-500 font-medium"
+                className="w-full bg-[#121215] text-xs text-neutral-200 pl-9 pr-4 py-2.5 rounded-full border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-500 font-medium"
               />
               <HiOutlineSearch className="absolute left-3 top-3 text-neutral-400 text-base" />
             </div>
@@ -305,7 +308,7 @@ const Navbar = () => {
             {/* Day / Night Mode Toggle on Desktop PC View */}
             <button
               onClick={toggleTheme}
-              className="hidden md:inline-flex p-2.5 text-neutral-400 hover:text-white transition-colors rounded-xl border border-neutral-800/80 bg-neutral-900/70 hover:bg-neutral-800"
+              className="hidden md:inline-flex p-2.5 text-neutral-400 hover:text-white transition-colors rounded-xl border border-neutral-800 bg-[#121215] hover:bg-neutral-800"
               title={isDarkMode ? "Switch to Day Mode (White Theme)" : "Switch to Night Mode (Black Theme)"}
             >
               {isDarkMode ? (
@@ -354,7 +357,7 @@ const Navbar = () => {
                   className={`flex items-center space-x-2 p-1.5 pr-2.5 rounded-full border transition-all duration-200 ${
                     userDropdownOpen
                       ? "border-white bg-neutral-800 text-white shadow-lg"
-                      : "border-neutral-800 bg-neutral-900/80 hover:border-neutral-700 text-neutral-300"
+                      : "border-neutral-800 bg-[#121215] hover:border-neutral-700 text-neutral-300"
                   }`}
                   title="Account Menu"
                 >
@@ -372,15 +375,15 @@ const Navbar = () => {
                   />
                 </button>
 
-                {/* Animated Dropdown Menu List */}
+                {/* Animated Dropdown Menu List (100% Solid, No Transparency) */}
                 <div
-                  className={`absolute right-0 mt-2.5 w-60 bg-[#121215]/95 backdrop-blur-2xl border border-neutral-800 rounded-2xl shadow-2xl p-2 z-50 space-y-1 transition-all duration-200 ease-out origin-top-right ${
+                  className={`absolute right-0 mt-2.5 w-60 bg-[#141418] border border-neutral-800 rounded-2xl shadow-2xl p-2 z-50 space-y-1 transition-all duration-150 ease-out origin-top-right ${
                     userDropdownOpen
-                      ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-                      : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+                      ? "opacity-100 scale-100 pointer-events-auto visible"
+                      : "opacity-0 scale-95 pointer-events-none invisible"
                   }`}
                 >
-                  <div className="px-3 py-2.5 border-b border-neutral-800/80">
+                  <div className="px-3 py-2.5 border-b border-neutral-800">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-bold text-white truncate">{user?.userName || "Member"}</p>
                       {isAdmin && (
@@ -468,7 +471,7 @@ const Navbar = () => {
                     )}
                   </div>
 
-                  <div className="pt-1 border-t border-neutral-800/80">
+                  <div className="pt-1 border-t border-neutral-800">
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center space-x-2.5 px-3 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-950/30 rounded-xl transition-colors text-left"
@@ -497,29 +500,21 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Full-Screen Mobile Menu Overlay for Both Buyer and Admin */}
+      {/* 100% Solid Opaque Full-Screen Mobile Menu (Anchored, Zero Drift, Zero Transparency) */}
       <div
-        className={`md:hidden fixed inset-0 z-40 bg-[#09090b]/98 backdrop-blur-3xl transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col justify-between pt-24 pb-8 px-5 sm:px-6 overflow-y-auto ${
+        className={`md:hidden fixed inset-x-0 bottom-0 top-[76px] z-40 bg-[#09090b] transition-opacity duration-200 ease-in-out flex flex-col justify-between pt-4 pb-10 px-5 sm:px-6 overflow-y-auto overflow-x-hidden touch-pan-y ${
           mobileMenuOpen
-            ? "opacity-100 translate-y-0 pointer-events-auto visible"
-            : "opacity-0 -translate-y-4 pointer-events-none invisible"
+            ? "opacity-100 pointer-events-auto visible"
+            : "opacity-0 pointer-events-none invisible"
         }`}
-        style={{ minHeight: "100dvh" }}
       >
-        {/* Ambient Top Glow */}
-        <div
-          className={`pointer-events-none absolute -top-16 -right-16 w-72 h-72 rounded-full blur-[100px] transition-opacity duration-700 ${
-            isAdmin ? "bg-amber-500/15" : "bg-white/10"
-          }`}
-        />
-
         {/* Top Scrollable Navigation Container */}
-        <div className="space-y-4 relative z-10">
+        <div className="space-y-4 w-full">
           {isAdmin ? (
-            /* ================= ADMIN MOBILE FULL SCREEN CONTENT ================= */
+            /* ================= ADMIN MOBILE SOLID FULL SCREEN CONTENT ================= */
             <>
-              {/* Admin Profile Banner Card */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-[#141418] to-[#121215] border border-amber-900/40 flex items-center justify-between shadow-lg">
+              {/* Admin Profile Banner Card (100% Solid) */}
+              <div className="p-4 rounded-2xl bg-[#16141a] border border-amber-900/60 flex items-center justify-between shadow-lg">
                 <div className="flex items-center space-x-3.5">
                   <div className="w-11 h-11 rounded-xl bg-amber-400 text-black font-extrabold text-sm flex items-center justify-center font-['Syne',sans-serif] shadow-md">
                     {userInitials}
@@ -529,7 +524,7 @@ const Navbar = () => {
                       <p className="text-sm font-bold text-white font-['Syne',sans-serif]">
                         {user?.userName || "Administrator"}
                       </p>
-                      <span className="text-[9px] uppercase font-mono tracking-wider px-2 py-0.5 rounded-md bg-amber-400/20 text-amber-300 border border-amber-500/30 font-bold">
+                      <span className="text-[9px] uppercase font-mono tracking-wider px-2 py-0.5 rounded-md bg-amber-950 text-amber-300 border border-amber-800 font-bold">
                         ADMIN
                       </span>
                     </div>
@@ -540,20 +535,20 @@ const Navbar = () => {
                 </div>
               </div>
 
-              {/* Admin Menu Grid / Cards */}
+              {/* Admin Menu Grid / Cards (100% Solid) */}
               <nav className="flex flex-col space-y-2 pt-1">
                 {/* Dashboard Overview */}
                 <Link
                   to="/seller/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-colors active:scale-[0.99] ${
                     location.pathname === "/seller/dashboard"
-                      ? "bg-neutral-900/90 border-white text-white shadow-md"
-                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                      ? "bg-[#1c1c22] border-white text-white shadow-md"
+                      : "bg-[#141418] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700"
                   }`}
                 >
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                    <div className="w-9 h-9 rounded-xl bg-amber-950/60 border border-amber-800/60 flex items-center justify-center text-amber-400">
                       <HiOutlineSparkles className="text-lg" />
                     </div>
                     <div>
@@ -568,14 +563,14 @@ const Navbar = () => {
                 <Link
                   to="/seller/orders"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-colors active:scale-[0.99] ${
                     location.pathname === "/seller/orders"
-                      ? "bg-neutral-900/90 border-white text-white shadow-md"
-                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                      ? "bg-[#1c1c22] border-white text-white shadow-md"
+                      : "bg-[#141418] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700"
                   }`}
                 >
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-blue-400/10 border border-blue-400/30 flex items-center justify-center text-blue-400">
+                    <div className="w-9 h-9 rounded-xl bg-blue-950/60 border border-blue-800/60 flex items-center justify-center text-blue-400">
                       <HiOutlineClipboardList className="text-lg" />
                     </div>
                     <div>
@@ -590,14 +585,14 @@ const Navbar = () => {
                 <Link
                   to="/seller/coupons"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-colors active:scale-[0.99] ${
                     location.pathname === "/seller/coupons"
-                      ? "bg-neutral-900/90 border-amber-400/60 text-white shadow-md"
-                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                      ? "bg-[#1c1c22] border-amber-400 text-white shadow-md"
+                      : "bg-[#141418] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700"
                   }`}
                 >
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-400/10 border border-emerald-400/30 flex items-center justify-center text-emerald-400">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-950/60 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
                       <HiOutlineTag className="text-lg" />
                     </div>
                     <div>
@@ -617,14 +612,14 @@ const Navbar = () => {
                 <Link
                   to="/seller/add-product"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-colors active:scale-[0.99] ${
                     location.pathname === "/seller/add-product"
-                      ? "bg-neutral-900/90 border-white text-white shadow-md"
-                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                      ? "bg-[#1c1c22] border-white text-white shadow-md"
+                      : "bg-[#141418] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700"
                   }`}
                 >
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white">
+                    <div className="w-9 h-9 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center text-white">
                       <HiOutlinePlus className="text-lg" />
                     </div>
                     <div>
@@ -639,14 +634,14 @@ const Navbar = () => {
                 <Link
                   to="/profile"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-colors active:scale-[0.99] ${
                     location.pathname === "/profile"
-                      ? "bg-neutral-900/90 border-white text-white shadow-md"
-                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                      ? "bg-[#1c1c22] border-white text-white shadow-md"
+                      : "bg-[#141418] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700"
                   }`}
                 >
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-purple-400/10 border border-purple-400/30 flex items-center justify-center text-purple-400">
+                    <div className="w-9 h-9 rounded-xl bg-purple-950/60 border border-purple-800/60 flex items-center justify-center text-purple-400">
                       <HiOutlineUser className="text-lg" />
                     </div>
                     <div>
@@ -661,10 +656,10 @@ const Navbar = () => {
                 <Link
                   to="/"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between p-3.5 rounded-2xl border border-neutral-800/70 bg-[#121215]/50 hover:bg-neutral-900 text-neutral-400 hover:text-white transition-all active:scale-[0.98]"
+                  className="flex items-center justify-between p-3.5 rounded-2xl border border-neutral-800 bg-[#141418] text-neutral-400 hover:text-white transition-colors active:scale-[0.99]"
                 >
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-neutral-800/60 border border-neutral-700/60 flex items-center justify-center text-neutral-300">
+                    <div className="w-9 h-9 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-300">
                       <HiOutlineEye className="text-lg" />
                     </div>
                     <div>
@@ -677,9 +672,9 @@ const Navbar = () => {
               </nav>
             </>
           ) : (
-            /* ================= BUYER / PUBLIC MOBILE FULL SCREEN CONTENT ================= */
+            /* ================= BUYER / PUBLIC MOBILE SOLID FULL SCREEN CONTENT ================= */
             <>
-              {/* Luxury Search Bar */}
+              {/* Luxury Search Bar (Solid) */}
               <div className="relative">
                 <input
                   type="text"
@@ -687,17 +682,17 @@ const Navbar = () => {
                   value={mobileSearchQuery}
                   onChange={(e) => setMobileSearchQuery(e.target.value)}
                   onKeyDown={handleMobileSearch}
-                  className="w-full bg-[#121215] text-xs text-neutral-200 pl-10 pr-4 py-3.5 rounded-2xl border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-500 font-medium shadow-inner"
+                  className="w-full bg-[#141418] text-xs text-neutral-200 pl-10 pr-4 py-3.5 rounded-2xl border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-500 font-medium"
                 />
                 <HiOutlineSearch className="absolute left-3.5 top-4 text-neutral-400 text-base" />
               </div>
 
-              {/* Quick Bag & Wishlist Access Grid */}
+              {/* Quick Bag & Wishlist Access Grid (Solid) */}
               <div className="grid grid-cols-2 gap-2.5">
                 <Link
                   to="/cart"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-3.5 rounded-2xl bg-[#121215] border border-neutral-800/90 flex items-center justify-between hover:border-neutral-700 active:scale-95 transition-all shadow-sm"
+                  className="p-3.5 rounded-2xl bg-[#141418] border border-neutral-800 flex items-center justify-between hover:border-neutral-700 active:scale-95 transition-all shadow-sm"
                 >
                   <div className="flex items-center space-x-2.5">
                     <HiOutlineShoppingBag className="text-lg text-white" />
@@ -715,7 +710,7 @@ const Navbar = () => {
                 <Link
                   to="/wishlist"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-3.5 rounded-2xl bg-[#121215] border border-neutral-800/90 flex items-center justify-between hover:border-neutral-700 active:scale-95 transition-all shadow-sm"
+                  className="p-3.5 rounded-2xl bg-[#141418] border border-neutral-800 flex items-center justify-between hover:border-neutral-700 active:scale-95 transition-all shadow-sm"
                 >
                   <div className="flex items-center space-x-2.5">
                     <HiOutlineHeart className="text-lg text-rose-400" />
@@ -731,20 +726,20 @@ const Navbar = () => {
                 </Link>
               </div>
 
-              {/* Buyer Navigation Links */}
+              {/* Buyer Navigation Links (Solid) */}
               <nav className="flex flex-col space-y-2 pt-1">
                 {/* Home */}
                 <Link
                   to="/"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-colors active:scale-[0.99] ${
                     location.pathname === "/"
-                      ? "bg-neutral-900/90 border-white text-white shadow-md"
-                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                      ? "bg-[#1c1c22] border-white text-white shadow-md"
+                      : "bg-[#141418] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700"
                   }`}
                 >
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white">
+                    <div className="w-9 h-9 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center text-white">
                       <HiOutlineHome className="text-lg" />
                     </div>
                     <div>
@@ -759,14 +754,14 @@ const Navbar = () => {
                 <Link
                   to="/shop"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-colors active:scale-[0.99] ${
                     location.pathname === "/shop"
-                      ? "bg-neutral-900/90 border-white text-white shadow-md"
-                      : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                      ? "bg-[#1c1c22] border-white text-white shadow-md"
+                      : "bg-[#141418] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700"
                   }`}
                 >
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-neutral-800/80 border border-neutral-700/80 flex items-center justify-center text-neutral-200">
+                    <div className="w-9 h-9 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-200">
                       <HiOutlineShoppingBag className="text-lg" />
                     </div>
                     <div>
@@ -783,14 +778,14 @@ const Navbar = () => {
                     <Link
                       to="/my-orders"
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                      className={`flex items-center justify-between p-3.5 rounded-2xl border transition-colors active:scale-[0.99] ${
                         location.pathname === "/my-orders"
-                          ? "bg-neutral-900/90 border-white text-white shadow-md"
-                          : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                          ? "bg-[#1c1c22] border-white text-white shadow-md"
+                          : "bg-[#141418] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700"
                       }`}
                     >
                       <div className="flex items-center space-x-3.5">
-                        <div className="w-9 h-9 rounded-xl bg-blue-400/10 border border-blue-400/30 flex items-center justify-center text-blue-400">
+                        <div className="w-9 h-9 rounded-xl bg-blue-950/60 border border-blue-800/60 flex items-center justify-center text-blue-400">
                           <HiOutlineClipboardList className="text-lg" />
                         </div>
                         <div>
@@ -805,14 +800,14 @@ const Navbar = () => {
                     <Link
                       to="/profile"
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
+                      className={`flex items-center justify-between p-3.5 rounded-2xl border transition-colors active:scale-[0.99] ${
                         location.pathname === "/profile"
-                          ? "bg-neutral-900/90 border-white text-white shadow-md"
-                          : "bg-[#121215]/80 border-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-700"
+                          ? "bg-[#1c1c22] border-white text-white shadow-md"
+                          : "bg-[#141418] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700"
                       }`}
                     >
                       <div className="flex items-center space-x-3.5">
-                        <div className="w-9 h-9 rounded-xl bg-purple-400/10 border border-purple-400/30 flex items-center justify-center text-purple-400">
+                        <div className="w-9 h-9 rounded-xl bg-purple-950/60 border border-purple-800/60 flex items-center justify-center text-purple-400">
                           <HiOutlineUser className="text-lg" />
                         </div>
                         <div>
@@ -830,20 +825,20 @@ const Navbar = () => {
         </div>
 
         {/* Bottom Section: Theme Switcher & Auth Actions */}
-        <div className="pt-6 space-y-3 relative z-10 border-t border-neutral-800/80">
-          {/* Day / Night Theme Switcher */}
+        <div className="pt-6 space-y-3 border-t border-neutral-800">
+          {/* Day / Night Theme Switcher (Solid) */}
           <button
             type="button"
             onClick={toggleTheme}
-            className="w-full flex items-center justify-between p-3 rounded-2xl border border-neutral-800/80 bg-[#121215]/80 hover:bg-neutral-900 transition-colors text-left active:scale-[0.98]"
+            className="w-full flex items-center justify-between p-3 rounded-2xl border border-neutral-800 bg-[#141418] hover:bg-neutral-900 transition-colors text-left active:scale-[0.99]"
           >
             <div className="flex items-center space-x-3">
               {isDarkMode ? (
-                <div className="w-8 h-8 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-300">
+                <div className="w-8 h-8 rounded-xl bg-amber-950/60 border border-amber-800/60 flex items-center justify-center text-amber-300">
                   <HiOutlineSun className="text-base" />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-xl bg-blue-400/10 border border-blue-400/30 flex items-center justify-center text-blue-300">
+                <div className="w-8 h-8 rounded-xl bg-blue-950/60 border border-blue-800/60 flex items-center justify-center text-blue-300">
                   <HiOutlineMoon className="text-base" />
                 </div>
               )}
@@ -865,7 +860,7 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-2xl border border-rose-900/50 bg-rose-950/20 text-rose-400 text-xs uppercase tracking-wider font-extrabold hover:bg-rose-950/40 transition-colors active:scale-[0.98]"
+                className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-2xl border border-rose-900/60 bg-[#1a1113] text-rose-400 text-xs uppercase tracking-wider font-extrabold hover:bg-rose-950/40 transition-colors active:scale-[0.99]"
               >
                 <HiOutlineLogout className="text-base" />
                 <span>Log Out</span>
@@ -876,7 +871,7 @@ const Navbar = () => {
               <Link
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block w-full text-center text-xs uppercase tracking-wider font-extrabold bg-white text-black py-3.5 rounded-2xl shadow-xl hover:bg-neutral-200 transition-colors active:scale-[0.98]"
+                className="block w-full text-center text-xs uppercase tracking-wider font-extrabold bg-white text-black py-3.5 rounded-2xl shadow-xl hover:bg-neutral-200 transition-colors active:scale-[0.99]"
               >
                 Sign In to Account
               </Link>
