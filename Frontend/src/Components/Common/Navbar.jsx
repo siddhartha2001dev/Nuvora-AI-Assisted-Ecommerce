@@ -608,28 +608,6 @@ const Navbar = () => {
                   <HiOutlineChevronRight className="text-neutral-500 text-sm" />
                 </Link>
 
-                {/* Add New Piece */}
-                <Link
-                  to="/seller/add-product"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-colors active:scale-[0.99] ${
-                    location.pathname === "/seller/add-product"
-                      ? "bg-[#1c1c22] border-white text-white shadow-md"
-                      : "bg-[#141418] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700"
-                  }`}
-                >
-                  <div className="flex items-center space-x-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center text-white">
-                      <HiOutlinePlus className="text-lg" />
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase font-extrabold tracking-wider">Add New Piece</p>
-                      <p className="text-[10px] text-neutral-400 font-normal">Upload luxury inventory & media</p>
-                    </div>
-                  </div>
-                  <HiOutlineChevronRight className="text-neutral-500 text-sm" />
-                </Link>
-
                 {/* Admin Profile */}
                 <Link
                   to="/profile"
@@ -651,24 +629,6 @@ const Navbar = () => {
                   </div>
                   <HiOutlineChevronRight className="text-neutral-500 text-sm" />
                 </Link>
-
-                {/* Preview Customer Storefront */}
-                <Link
-                  to="/"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between p-3.5 rounded-2xl border border-neutral-800 bg-[#141418] text-neutral-400 hover:text-white transition-colors active:scale-[0.99]"
-                >
-                  <div className="flex items-center space-x-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-300">
-                      <HiOutlineEye className="text-lg" />
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase font-bold tracking-wider">Customer Storefront</p>
-                      <p className="text-[10px] text-neutral-500 font-normal">Preview customer shopping experience</p>
-                    </div>
-                  </div>
-                  <HiOutlineChevronRight className="text-neutral-600 text-sm" />
-                </Link>
               </nav>
             </>
           ) : (
@@ -685,45 +645,6 @@ const Navbar = () => {
                   className="w-full bg-[#141418] text-xs text-neutral-200 pl-10 pr-4 py-3.5 rounded-2xl border border-neutral-800 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-500 font-medium"
                 />
                 <HiOutlineSearch className="absolute left-3.5 top-4 text-neutral-400 text-base" />
-              </div>
-
-              {/* Quick Bag & Wishlist Access Grid (Solid) */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <Link
-                  to="/cart"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-3.5 rounded-2xl bg-[#141418] border border-neutral-800 flex items-center justify-between hover:border-neutral-700 active:scale-95 transition-all shadow-sm"
-                >
-                  <div className="flex items-center space-x-2.5">
-                    <HiOutlineShoppingBag className="text-lg text-white" />
-                    <span className="text-xs uppercase font-extrabold tracking-wider text-neutral-200">Bag</span>
-                  </div>
-                  {cartCount > 0 ? (
-                    <span className="w-5 h-5 rounded-full bg-white text-black text-[10px] font-extrabold flex items-center justify-center font-mono shadow">
-                      {cartCount}
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-mono text-neutral-500">0</span>
-                  )}
-                </Link>
-
-                <Link
-                  to="/wishlist"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-3.5 rounded-2xl bg-[#141418] border border-neutral-800 flex items-center justify-between hover:border-neutral-700 active:scale-95 transition-all shadow-sm"
-                >
-                  <div className="flex items-center space-x-2.5">
-                    <HiOutlineHeart className="text-lg text-rose-400" />
-                    <span className="text-xs uppercase font-extrabold tracking-wider text-neutral-200">Saved</span>
-                  </div>
-                  {wishlistCount > 0 ? (
-                    <span className="w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold flex items-center justify-center font-mono shadow">
-                      {wishlistCount}
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-mono text-neutral-500">0</span>
-                  )}
-                </Link>
               </div>
 
               {/* Buyer Navigation Links (Solid) */}
@@ -824,35 +745,8 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Bottom Section: Theme Switcher & Auth Actions */}
+        {/* Bottom Section: Auth Actions */}
         <div className="pt-6 space-y-3 border-t border-neutral-800">
-          {/* Day / Night Theme Switcher (Solid) */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="w-full flex items-center justify-between p-3 rounded-2xl border border-neutral-800 bg-[#141418] hover:bg-neutral-900 transition-colors text-left active:scale-[0.99]"
-          >
-            <div className="flex items-center space-x-3">
-              {isDarkMode ? (
-                <div className="w-8 h-8 rounded-xl bg-amber-950/60 border border-amber-800/60 flex items-center justify-center text-amber-300">
-                  <HiOutlineSun className="text-base" />
-                </div>
-              ) : (
-                <div className="w-8 h-8 rounded-xl bg-blue-950/60 border border-blue-800/60 flex items-center justify-center text-blue-300">
-                  <HiOutlineMoon className="text-base" />
-                </div>
-              )}
-              <div>
-                <p className="text-[11px] font-extrabold text-white uppercase tracking-wider">Visual Theme</p>
-                <p className="text-[10px] text-neutral-400">
-                  {isDarkMode ? "Day Mode (White Theme)" : "Night Mode (Dark Theme)"}
-                </p>
-              </div>
-            </div>
-            <span className="text-[9px] font-mono px-2 py-1 rounded bg-neutral-800 text-neutral-300 border border-neutral-700">
-              Switch
-            </span>
-          </button>
 
           {/* Auth Action Buttons */}
           {isAuthenticated ? (
