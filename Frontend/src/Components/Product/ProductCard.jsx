@@ -44,7 +44,7 @@ const ProductCard = ({ product }) => {
   );
 
   const displayImage = images?.[0] || "";
-  const hasDiscount = discountPrice && discountPrice > 0 && discountPrice < price;
+    const hasDiscount = Number(discountPrice) > 0 && Number(discountPrice) < Number(price);
 
   // Share product
   const handleShareProduct = async (e) => {
