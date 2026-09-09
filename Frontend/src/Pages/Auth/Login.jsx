@@ -105,12 +105,9 @@ const Login = () => {
 
           googleBtnRef.current.innerHTML = "";
           window.google.accounts.id.renderButton(googleBtnRef.current, {
-            theme: "filled_black",
+            theme: "outline",
             size: "large",
-            width: buttonWidth,
-            text: "signin_with",
-            shape: "rectangular",
-            logo_alignment: "left",
+            width: 380,
           });
 
           // Check if Google successfully mounted an iframe inside the button container
@@ -263,20 +260,8 @@ const Login = () => {
           </div>
 
           <div className="space-y-2.5">
-            {/* Native Google Sign-In Button Container */}
-            <div
-              className={`w-full flex justify-center items-center transition-all duration-200 ${
-                googleReady ? "min-h-[44px] opacity-100" : "h-0 overflow-hidden opacity-0 pointer-events-none"
-              }`}
-            >
-              <div
-                ref={googleBtnRef}
-                className="w-full flex justify-center items-center"
-              />
-            </div>
-
-            {/* Fallback button shown while Google SDK is loading or if Google fails to mount */}
-            {!googleReady && (
+            {/* Google Sign-In with Native GIS Overlay */}
+            <div className="relative w-full overflow-hidden rounded-xl">
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
@@ -285,7 +270,15 @@ const Login = () => {
                 <FcGoogle className="text-xl shrink-0 group-hover:scale-105 transition-transform" />
                 <span>Sign in with Google</span>
               </button>
-            )}
+              <div
+                ref={googleBtnRef}
+                className={`absolute inset-0 opacity-[0.0001] overflow-hidden z-10 flex items-center justify-center cursor-pointer ${
+                  googleReady ? "pointer-events-auto" : "pointer-events-none"
+                }`}
+                style={{ transform: "scale(1.25)", transformOrigin: "center" }}
+                title="Sign in with Google"
+              />
+            </div>
           </div>
         </div>
 
