@@ -14,7 +14,8 @@ import {
     addAddress,
     updateAddress,
     deleteAddress,
-    setDefaultAddress
+    setDefaultAddress,
+    googleLogin
 } from "../controllers/userController.js";
 import { hashToken } from "../middlewares/hashToken.js";
 import { verifyToken } from "../middlewares/verifyToken.js";
@@ -26,6 +27,7 @@ const userRouter = express.Router();
 
 userRouter.post("/register", validate(userRegisterSchema), register);
 userRouter.post("/login", validate(userLoginSchema), logIn);
+userRouter.post("/google-login", googleLogin);
 userRouter.delete("/logout", hashToken, logOut);
 userRouter.post("/refresh-token", refreshToken);
 

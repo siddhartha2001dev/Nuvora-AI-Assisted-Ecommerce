@@ -30,6 +30,19 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+// 1.1 Google Login
+export const googleLoginUser = createAsyncThunk(
+  "auth/googleLoginUser",
+  async (idToken, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/user/google-login", { idToken });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Google login failed");
+    }
+  }
+);
+
 // 2. User Register
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
@@ -265,6 +278,26 @@ const authSlice = createSlice({
         if (token) localStorage.setItem("nuvora_token", token);
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Google Login
+      .addCase(googleLoginUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(googleLoginUser.fulfilled, (state, action) => {
+        state.loading = false;
+        const user = action.payload.data || action.payload.user;
+        const token = action.payload.accessToken || action.payload.token;
+        state.user = user;
+        state.token = token;
+        state.isAuthenticated = true;
+        if (user) localStorage.setItem("nuvora_user", JSON.stringify(user));
+        if (token) localStorage.setItem("nuvora_token", token);
+      })
+      .addCase(googleLoginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

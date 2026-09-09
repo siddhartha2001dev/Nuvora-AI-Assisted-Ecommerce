@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { verifyEmail, sendResetPasswordEmail } from "../email/verifyEmail.js";
 import cloudinary from "../config/cloudinary.js";
+import { OAuth2Client } from "google-auth-library";
 
 // 1. Register
 export const register = async (req, res) => {
@@ -736,3 +737,103 @@ export const setDefaultAddress = async (req, res) => {
         });
     }
 };
+
+// ==========================================
+// 16. Google OAuth Login
+// ==========================================
+export const googleLogin = async (req, res) => {
+    try {
+        const { idToken } = req.body;
+        if (!idToken) {
+            return res.status(400).json({
+                success: false,
+                message: "Google ID Token is required"
+            });
+        }
+
+        const clientId = process.env.GOOGLE_CLIENT_ID;
+        if (!clientId) {
+            return res.status(500).json({
+                success: false,
+                message: "GOOGLE_CLIENT_ID is not configured in server environment"
+            });
+        }
+
+        const googleClient = new OAuth2Client(clientId);
+        const ticket = await googleClient.verifyIdToken({
+            idToken,
+            audience: clientId
+        });
+
+        const payload = ticket.getPayload();
+        if (!payload || !payload.email) {
+            return res.status(400).json({
+                success: false,
+                message: "Unable to retrieve user information from Google"
+            });
+        }
+
+        const { sub: googleId, email, name, picture, email_verified } = payload;
+        const normalizedEmail = email.toLowerCase().trim();
+
+        let user = await userSchema.findOne({ email: normalizedEmail });
+
+        if (!user) {
+            // Auto-register new buyer
+            user = new userSchema({
+                userName: name || normalizedEmail.split("@")[0],
+                email: normalizedEmail,
+                authProvider: "google",
+                googleId,
+                avatarUrl: picture || "",
+                isVerified: Boolean(email_verified),
+                role: "Buyer"
+            });
+            await user.save();
+        } else {
+            // Link Google account if not already linked
+            if (!user.googleId) {
+                user.googleId = googleId;
+            }
+            if (!user.avatarUrl && picture) {
+                user.avatarUrl = picture;
+            }
+            if (email_verified && !user.isVerified) {
+                user.isVerified = true;
+            }
+            await user.save();
+        }
+
+        // Manage active user session
+        await sessionSchema.findOneAndDelete({ userId: user._id });
+        await sessionSchema.create({ userId: user._id });
+
+        const accessToken = jwt.sign({ _id: user._id }, process.env.secretKey, { expiresIn: "7d" });
+        const refreshToken = jwt.sign({ _id: user._id }, process.env.secretKey, { expiresIn: "30d" });
+
+        if (user.role === "Seller") {
+            user.role = "Admin";
+        }
+        user.isLoggedIn = true;
+        await user.save();
+
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        return res.status(200).json({
+            success: true,
+            message: "Google login successful",
+            data: userResponse,
+            accessToken,
+            refreshToken
+        });
+
+    } catch (error) {
+        console.error("Google Login Error:", error);
+        return res.status(401).json({
+            success: false,
+            message: `Google authentication failed: ${error.message}`
+        });
+    }
+};
+

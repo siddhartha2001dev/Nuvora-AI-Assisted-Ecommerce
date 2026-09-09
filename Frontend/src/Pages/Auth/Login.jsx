@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../../redux/slices/authSlice";
+import { loginUser, googleLoginUser } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
 import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
+import { FcGoogle } from "react-icons/fc";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const googleBtnRef = useRef(null);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -65,9 +67,75 @@ const Login = () => {
     }
   };
 
+  // Google Identity Services Setup
+  useEffect(() => {
+    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!googleClientId || googleClientId.includes("your_google_client_id")) return;
+
+    const handleGoogleResponse = async (response) => {
+      try {
+        const res = await dispatch(googleLoginUser(response.credential)).unwrap();
+        toast.success(`Welcome, ${res?.data?.userName || "User"}!`);
+        if (res?.data?.role === "Seller" || res?.data?.role === "Admin") {
+          navigate("/seller/dashboard");
+        } else {
+          navigate(redirectTarget === "/login" ? "/" : redirectTarget, { replace: true });
+        }
+      } catch (err) {
+        toast.error(typeof err === "string" ? err : "Google sign-in failed");
+      }
+    };
+
+    const initGoogle = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: handleGoogleResponse,
+          auto_select: false,
+        });
+
+        if (googleBtnRef.current) {
+          window.google.accounts.id.renderButton(googleBtnRef.current, {
+            theme: "outline",
+            size: "large",
+            width: 380,
+          });
+        }
+      }
+    };
+
+    if (window.google?.accounts?.id) {
+      initGoogle();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initGoogle;
+      document.body.appendChild(script);
+    }
+  }, [dispatch, navigate, redirectTarget]);
+
+  const handleGoogleSignIn = () => {
+    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!googleClientId || googleClientId.includes("your_google_client_id")) {
+      toast("Google Client ID needed: Add VITE_GOOGLE_CLIENT_ID in Frontend/.env", {
+        icon: "ℹ️",
+        duration: 4000,
+      });
+      return;
+    }
+
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt();
+    } else {
+      toast.error("Google Auth is loading, please try again in a moment");
+    }
+  };
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-16">
-      <div className="w-full max-w-md bg-[#121215] border border-neutral-800/80 rounded-3xl p-8 sm:p-10 shadow-2xl space-y-8">
+      <div className="w-full max-w-md bg-[#121215] border border-neutral-800/80 rounded-3xl p-8 sm:p-10 shadow-2xl space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
           <span className="text-xs uppercase tracking-widest font-mono text-neutral-500">
@@ -147,6 +215,36 @@ const Login = () => {
             {isLoading ? "Signing In..." : "Sign In"}
           </button>
         </form>
+
+        {/* Divider & Social Sign-In */}
+        <div className="space-y-4">
+          <div className="relative flex items-center justify-center">
+            <div className="border-t border-neutral-800/80 w-full" />
+            <span className="bg-[#121215] px-3 text-[11px] uppercase tracking-widest text-neutral-500 font-mono shrink-0">
+              Or continue with
+            </span>
+            <div className="border-t border-neutral-800/80 w-full" />
+          </div>
+
+          <div className="space-y-2.5">
+            {/* Google Sign-In with Native GIS Overlay */}
+            <div className="relative w-full overflow-hidden rounded-xl">
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-neutral-800 bg-[#16161a] hover:bg-[#1e1e24] hover:border-neutral-700 text-neutral-200 hover:text-white text-xs font-semibold tracking-wide transition-all duration-200 active:scale-[0.99] shadow-sm cursor-pointer group"
+              >
+                <FcGoogle className="text-xl shrink-0 group-hover:scale-105 transition-transform" />
+                <span>Sign in with Google</span>
+              </button>
+              <div
+                ref={googleBtnRef}
+                className="absolute inset-0 opacity-[0.0001] cursor-pointer overflow-hidden z-10 flex items-center justify-center pointer-events-auto"
+                title="Sign in with Google"
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Footer */}
         <div className="text-center pt-4 border-t border-neutral-800 text-xs text-neutral-400">

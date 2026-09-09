@@ -11,9 +11,10 @@
 [![Node.js](https://img.shields.io/badge/Node.js-Express%205-green?logo=node.js)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47a248?logo=mongodb)](https://www.mongodb.com/)
 [![Google Gemini](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-blue?logo=google)](https://ai.google.dev/)
+[![Google OAuth](https://img.shields.io/badge/Auth-Google%20OAuth%202.0-4285F4?logo=google)](https://developers.google.com/identity)
 [![Brevo API](https://img.shields.io/badge/Email-Brevo%20REST%20API-0B996F?logo=brevo)](https://www.brevo.com/)
 
-> **NUVORA** is a sleek, monochromatic Direct-to-Consumer (D2C) luxury e-commerce platform built on a clean **Single-Vendor, Multi-Buyer** architecture. Powered by React 19, Redux Toolkit, Node.js Express 5, MongoDB Atlas, Cloudinary CDN, **Razorpay Payment Gateway**, **Brevo HTTPS Email Engine**, and the **Google Gemini 1.5 Flash AI** insights summarizer.
+> **NUVORA** is a sleek, monochromatic Direct-to-Consumer (D2C) luxury e-commerce platform built on a clean **Single-Vendor, Multi-Buyer** architecture. Powered by React 19, Redux Toolkit, Node.js Express 5, MongoDB Atlas, Cloudinary CDN, **Razorpay Payment Gateway**, **Google OAuth 2.0 Authentication**, **Brevo HTTPS Email Engine**, and the **Google Gemini 1.5 Flash AI** insights summarizer.
 
 🔗 **Live Application URL**: [https://nuvora-ekart.vercel.app/](https://nuvora-ekart.vercel.app/)  
 🛍️ **Product Catalogue / Shop**: [https://nuvora-ekart.vercel.app/shop](https://nuvora-ekart.vercel.app/shop)  
@@ -41,6 +42,7 @@
 - **New Product Drop Alerts**: Automatically sends an email alert with product image, price, and direct link to all newsletter subscribers whenever a seller/admin lists a new product.
 
 ### 🔐 4. Production-Ready Authentication & Security
+- **Google OAuth 2.0 1-Click Sign-In**: Native integration with official Google Identity Services (GIS). Cryptographic ID Token verification on the backend via `google-auth-library` (`OAuth2Client.verifyIdToken`), automatic buyer provisioning with verified status, and custom JWT session issuance.
 - **JWT & Password Security**: Bcrypt hashed credentials and 7-day access / 30-day refresh token architecture.
 - **Brevo REST API Email Verification**: Email verification and 15-minute expiring password reset links dispatched via Brevo HTTPS REST API (Port 443) for 100% cloud & Render deployment reliability.
 - **Interactive Password Visibility Toggle**: Eye icon toggle (`HiOutlineEye` / `HiOutlineEyeOff`) across Login, Register, Reset Password, and Profile Change Password forms.
@@ -81,18 +83,19 @@
 
 ### **Frontend**
 - **Core**: React 19, Vite 8, HTML5 Canvas API
+- **Authentication**: Google Identity Services (GIS)
 - **Payments**: Razorpay Checkout SDK (`checkout.js`)
 - **Routing**: React Router DOM v7
 - **State Management**: Redux Toolkit & Async Thunks (`authSlice`, `cartSlice`, `wishlistSlice`, `orderSlice`, `productSlice`, `reviewSlice`)
 - **Styling**: Tailwind CSS
-- **Icons & Feedback**: React Icons (`react-icons/hi`), React Hot Toast
+- **Icons & Feedback**: React Icons (`react-icons/hi`, `react-icons/fc`), React Hot Toast
 - **HTTP Client**: Axios with dynamic baseURL interceptor & JWT token attachment
 
 ### **Backend**
 - **Runtime & Framework**: Node.js (ES Modules), Express.js 5
 - **Database**: MongoDB Atlas with Mongoose ODM
+- **Authentication**: Google OAuth 2.0 (`google-auth-library`), JWT (JSON Web Tokens), Bcrypt password hashing
 - **Payments**: Official `razorpay` Node SDK & native `crypto` (HMAC SHA256)
-- **Authentication**: JWT (JSON Web Tokens), Bcrypt password hashing
 - **Media CDN**: Cloudinary SDK & Multer memory storage
 - **Email Service**: Brevo REST API (HTTPS Port 443)
 - **AI Engine**: Google Gemini 1.5 Flash REST API
@@ -156,6 +159,7 @@ nuvora-fs/
 - **Cloudinary Account Credentials**
 - **Brevo API Key** (from [brevo.com](https://brevo.com))
 - **Google Gemini API Key** (from [Google AI Studio](https://aistudio.google.com/))
+- **Google OAuth 2.0 Web Client ID & Secret** (from [Google Cloud Console](https://console.cloud.google.com/))
 - **Razorpay Key ID & Secret** (from [Razorpay Dashboard](https://dashboard.razorpay.com/))
 
 ---
@@ -183,6 +187,8 @@ nuvora-fs/
    GEMINI_API_KEY=your_gemini_api_key_here
    RAZORPAY_KEY_ID=your_razorpay_key_id
    RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+   GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
    ```
 4. Start the backend development server:
    ```bash
@@ -201,9 +207,11 @@ nuvora-fs/
    ```bash
    npm install
    ```
-3. *(Optional)* Create a `.env` file in the `Frontend/` directory:
+3. Create a `.env` file in the `Frontend/` directory (refer to `.env.example`):
    ```env
-   VITE_API_BASE_URL=https://nuvora-ai-assisted-ecommerce.onrender.com
+   VITE_API_BASE_URL=http://localhost:8000
+   VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
+   VITE_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
    ```
 4. Start the Vite development server:
    ```bash
@@ -235,6 +243,8 @@ nuvora-fs/
    - `GEMINI_API_KEY`: *(Your Google Gemini API Key)*
    - `RAZORPAY_KEY_ID`: *(Your Razorpay Key ID)*
    - `RAZORPAY_KEY_SECRET`: *(Your Razorpay Key Secret)*
+   - `GOOGLE_CLIENT_ID`: *(Your Google OAuth Client ID)*
+   - `GOOGLE_CLIENT_SECRET`: *(Your Google OAuth Client Secret)*
    - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
    - `CLIENT_URL`: `https://nuvora-ekart.vercel.app`
 
@@ -243,8 +253,10 @@ nuvora-fs/
 2. Configure settings:
    - **Framework Preset**: `Vite`
    - **Root Directory**: `Frontend`
-3. Add Environment Variable:
+3. Add Environment Variables:
    - `VITE_API_BASE_URL`: `https://nuvora-ai-assisted-ecommerce.onrender.com`
+   - `VITE_GOOGLE_CLIENT_ID`: *(Your Google OAuth Client ID)*
+   - `VITE_RAZORPAY_KEY_ID`: *(Your Razorpay Key ID)*
 4. Click **Deploy**.
 
 ---
@@ -255,6 +267,7 @@ nuvora-fs/
 | :--- | :---: | :---: | :--- |
 | `/user/register` | `POST` | Public | Register new buyer account & dispatch Brevo verification email |
 | `/user/login` | `POST` | Public | Authenticate user & issue signed JWT |
+| `/user/google-login` | `POST` | Public | Verify Google OAuth ID Token via `google-auth-library` & issue JWT |
 | `/user/profile` | `GET` / `PUT` | Logged In | Fetch / Update user profile |
 | `/user/profile/picture` | `PUT` | Buyer | Upload avatar directly to Cloudinary |
 | `/user/addresses` | `GET` | Logged In | Fetch user's saved Address Book |
