@@ -337,14 +337,16 @@ const MyOrders = () => {
                       <div className="text-[11px] text-neutral-500 font-mono">
                         {order.orderStatus === "Cancelled" ? (
                           <span>Order cancelled • Replacement not available</span>
+                        ) : order.orderStatus !== "Delivered" ? (
+                          <span className="text-neutral-500">Replacement available within 7 days once Delivered</span>
                         ) : isWithin7Days(order.createdAt) ? (
-                          <span className="text-neutral-400">Within 7-day replacement window</span>
+                          <span className="text-emerald-400/90">Delivered • Eligible for 7-day replacement</span>
                         ) : (
                           <span className="text-neutral-500">7-day replacement window has expired</span>
                         )}
                       </div>
 
-                      {order.orderStatus !== "Cancelled" && isWithin7Days(order.createdAt) && (
+                      {order.orderStatus === "Delivered" && isWithin7Days(order.createdAt) && (
                         <button
                           type="button"
                           onClick={() => handleOpenReplacementModal(order)}

@@ -475,11 +475,11 @@ export const requestOrderReplacement = async (req, res) => {
             });
         }
 
-        // Cannot request replacement for cancelled orders
-        if (order.orderStatus === "Cancelled") {
+        // Only delivered orders are eligible for replacement
+        if (order.orderStatus !== "Delivered") {
             return res.status(400).json({
                 success: false,
-                message: "Cancelled orders are not eligible for replacement"
+                message: "Replacement requests can only be made once the order has been Delivered."
             });
         }
 
