@@ -6,6 +6,10 @@ import toast from "react-hot-toast";
 import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import { FcGoogle } from "react-icons/fc";
 
+const GOOGLE_CLIENT_ID =
+  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+  "492327953955-uuvcd3l43o020vrsu661j29f580c1ep7.apps.googleusercontent.com";
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,8 +74,8 @@ const Login = () => {
 
   // Google Identity Services Setup
   useEffect(() => {
-    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!googleClientId || googleClientId.includes("your_google_client_id")) return;
+    const googleClientId = GOOGLE_CLIENT_ID;
+    if (!googleClientId) return;
 
     const handleGoogleResponse = async (response) => {
       try {
@@ -140,12 +144,9 @@ const Login = () => {
   }, [dispatch, navigate, redirectTarget]);
 
   const handleGoogleSignIn = () => {
-    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!googleClientId || googleClientId.includes("your_google_client_id")) {
-      toast("Google Client ID needed: Add VITE_GOOGLE_CLIENT_ID in Frontend/.env", {
-        icon: "ℹ️",
-        duration: 4000,
-      });
+    const googleClientId = GOOGLE_CLIENT_ID;
+    if (!googleClientId) {
+      toast.error("Google Client ID is missing.");
       return;
     }
 
