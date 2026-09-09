@@ -6,9 +6,7 @@ import toast from "react-hot-toast";
 import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import { FcGoogle } from "react-icons/fc";
 
-const GOOGLE_CLIENT_ID =
-  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-  "492327953955-hgajps023ga6vj9qabuccjq3css8h87h.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 const Login = () => {
   const [email, setEmail] = useState("");

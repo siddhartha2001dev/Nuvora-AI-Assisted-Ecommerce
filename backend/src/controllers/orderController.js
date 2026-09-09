@@ -273,10 +273,10 @@ export const cancelOrder = async (req, res) => {
 };
 
 
-// Helper to safely obtain Razorpay credentials (with fallback test keys)
+// Helper to safely obtain Razorpay credentials strictly from environment variables
 const getRazorpayCredentials = () => {
-    const key_id = (process.env.RAZORPAY_KEY_ID || "rzp_test_TYfrRVbqnoyzaT").trim();
-    const key_secret = (process.env.RAZORPAY_KEY_SECRET || "aiOrWTX5IVwP5TCrYEZbmSwl").trim();
+    const key_id = (process.env.RAZORPAY_KEY_ID || "").trim();
+    const key_secret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
     return { key_id, key_secret };
 };
 
@@ -293,6 +293,13 @@ export const createRazorPayOrder = async (req, res) => {
         }
 
         const { key_id, key_secret } = getRazorpayCredentials();
+
+        if (!key_id || !key_secret) {
+            return res.status(500).json({
+                success: false,
+                message: "RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is not configured in server environment"
+            });
+        }
 
         const razorpayInstance = new Razorpay({
             key_id,
