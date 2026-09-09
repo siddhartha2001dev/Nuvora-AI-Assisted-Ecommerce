@@ -8,7 +8,7 @@ import { FcGoogle } from "react-icons/fc";
 
 const GOOGLE_CLIENT_ID =
   import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-  "492327953955-uuvcd3l43o020vrsu661j29f580c1ep7.apps.googleusercontent.com";
+  "492327953955-hgajps023ga6vj9qabuccjq3css8h87h.apps.googleusercontent.com";
 
 const Login = () => {
   const [email, setEmail] = useState("");
