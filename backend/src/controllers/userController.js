@@ -751,7 +751,7 @@ export const googleLogin = async (req, res) => {
             });
         }
 
-        const clientId = process.env.GOOGLE_CLIENT_ID;
+        const clientId = process.env.GOOGLE_CLIENT_ID || "492327953955-hgajps023ga6vj9qabuccjq3css8h87h.apps.googleusercontent.com";
         if (!clientId) {
             return res.status(500).json({
                 success: false,
