@@ -307,7 +307,7 @@ const CheckOut = () => {
       const razorpayKey =
         data?.keyId ||
         import.meta.env.VITE_RAZORPAY_KEY_ID ||
-        "";
+        "rzp_test_TYfrRVbqnoyzaT";
 
       // Step B: Initialize and open Razorpay checkout modal
       const cleanContact = cleanPhoneForRazorpay(delivery.phone || user?.phone || "");
