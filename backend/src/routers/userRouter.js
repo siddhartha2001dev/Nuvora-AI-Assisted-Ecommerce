@@ -28,6 +28,7 @@ const userRouter = express.Router();
 userRouter.post("/register", validate(userRegisterSchema), register);
 userRouter.post("/login", validate(userLoginSchema), logIn);
 userRouter.post("/google-login", googleLogin);
+userRouter.post("/google-log-in", googleLogin);
 userRouter.delete("/logout", hashToken, logOut);
 userRouter.post("/refresh-token", refreshToken);
 
