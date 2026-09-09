@@ -66,6 +66,35 @@ const orderSchema = new mongoose.Schema({
         type: String,
         enum: ["Placed", "Shipped", "Delivered", "Cancelled"],
         default: "Placed"
+    },
+    replacement: {
+        isRequested: {
+            type: Boolean,
+            default: false
+        },
+        reason: {
+            type: String,
+            default: ""
+        },
+        userNote: {
+            type: String,
+            default: ""
+        },
+        status: {
+            type: String,
+            enum: ["None", "Pending", "Approved", "Rejected"],
+            default: "None"
+        },
+        adminNote: {
+            type: String,
+            default: ""
+        },
+        requestedAt: {
+            type: Date
+        },
+        resolvedAt: {
+            type: Date
+        }
     }
 }, { timestamps: true });
 

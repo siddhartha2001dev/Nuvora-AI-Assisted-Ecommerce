@@ -437,3 +437,133 @@ export const verifyRazorpayPayment = async (req, res) => {
         });
     }
 };
+
+// 9. Request Order Replacement (Buyer Only, within 7 days)
+export const requestOrderReplacement = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { reason, userNote } = req.body;
+
+        if (!reason || !reason.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "Please select a reason for replacement"
+            });
+        }
+
+        const order = await orderSchema.findById(id).populate("productId");
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found"
+            });
+        }
+
+        // Verify that the logged-in user is the buyer of this order
+        if (order.buyerId.toString() !== req.userId) {
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized: You can only request replacement for your own orders"
+            });
+        }
+
+        // Cannot request replacement for cancelled orders
+        if (order.orderStatus === "Cancelled") {
+            return res.status(400).json({
+                success: false,
+                message: "Cancelled orders are not eligible for replacement"
+            });
+        }
+
+        // 7-day replacement window validation
+        const orderDate = new Date(order.createdAt).getTime();
+        const diffDays = (Date.now() - orderDate) / (1000 * 60 * 60 * 24);
+        if (diffDays > 7) {
+            return res.status(400).json({
+                success: false,
+                message: "Replacement window expired. Requests must be submitted within 7 days of purchase."
+            });
+        }
+
+        // Prevent duplicate replacement requests
+        if (order.replacement && order.replacement.isRequested) {
+            return res.status(400).json({
+                success: false,
+                message: "A replacement request has already been submitted for this order"
+            });
+        }
+
+        order.replacement = {
+            isRequested: true,
+            reason: reason.trim(),
+            userNote: (userNote || "").trim(),
+            status: "Pending",
+            requestedAt: new Date()
+        };
+
+        await order.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Replacement request sent successfully! Current status: Pending.",
+            data: order
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// 10. Update Replacement Status (Admin Only: Accept/Reject)
+export const updateReplacementStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, adminNote } = req.body;
+
+        if (!status || !["Approved", "Rejected"].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Status must be either 'Approved' or 'Rejected'"
+            });
+        }
+
+        const order = await orderSchema.findById(id)
+            .populate("productId")
+            .populate("buyerId", "userName email phone");
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found"
+            });
+        }
+
+        if (!order.replacement || !order.replacement.isRequested) {
+            return res.status(400).json({
+                success: false,
+                message: "No replacement request found for this order"
+            });
+        }
+
+        order.replacement.status = status;
+        if (adminNote) {
+            order.replacement.adminNote = adminNote.trim();
+        }
+        order.replacement.resolvedAt = new Date();
+
+        await order.save();
+
+        return res.status(200).json({
+            success: true,
+            message: `Replacement request marked as ${status}`,
+            data: order
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};

@@ -79,6 +79,42 @@ export const updateOrderStatus = createAsyncThunk(
   }
 );
 
+// 6. Request Order Replacement (Customer)
+export const requestOrderReplacement = createAsyncThunk(
+  "orders/requestOrderReplacement",
+  async ({ id, orderId, reason, userNote }, { dispatch, rejectWithValue }) => {
+    try {
+      const targetId = id || orderId;
+      const response = await api.put(`/order/replace/${targetId}`, {
+        reason,
+        userNote,
+      });
+      dispatch(fetchMyOrders());
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Failed to submit replacement request");
+    }
+  }
+);
+
+// 7. Update Replacement Status (Seller / Admin)
+export const updateReplacementStatus = createAsyncThunk(
+  "orders/updateReplacementStatus",
+  async ({ id, orderId, status, adminNote }, { dispatch, rejectWithValue }) => {
+    try {
+      const targetId = id || orderId;
+      const response = await api.put(`/order/seller/replacement/${targetId}`, {
+        status,
+        adminNote,
+      });
+      dispatch(fetchSellerOrders());
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Failed to update replacement status");
+    }
+  }
+);
+
 // =============================================================================
 // ORDER SLICE
 // =============================================================================
