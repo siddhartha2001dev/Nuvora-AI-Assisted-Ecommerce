@@ -10,6 +10,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
   const googleBtnRef = useRef(null);
 
   const dispatch = useDispatch();
@@ -87,19 +88,35 @@ const Login = () => {
     };
 
     const initGoogle = () => {
-      if (window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: handleGoogleResponse,
-          auto_select: false,
-        });
-
-        if (googleBtnRef.current) {
-          window.google.accounts.id.renderButton(googleBtnRef.current, {
-            theme: "outline",
-            size: "large",
-            width: 380,
+      if (window.google?.accounts?.id && googleBtnRef.current) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: handleGoogleResponse,
+            auto_select: false,
           });
+
+          const containerWidth = googleBtnRef.current.parentElement?.offsetWidth || 340;
+          const buttonWidth = Math.max(220, Math.min(containerWidth, 380));
+
+          googleBtnRef.current.innerHTML = "";
+          window.google.accounts.id.renderButton(googleBtnRef.current, {
+            theme: "filled_black",
+            size: "large",
+            width: buttonWidth,
+            text: "signin_with",
+            shape: "rectangular",
+            logo_alignment: "left",
+          });
+
+          // Check if Google successfully mounted an iframe inside the button container
+          setTimeout(() => {
+            if (googleBtnRef.current && googleBtnRef.current.children.length > 0) {
+              setGoogleReady(true);
+            }
+          }, 300);
+        } catch (err) {
+          console.error("Google Auth initialization error:", err);
         }
       }
     };
@@ -107,12 +124,18 @@ const Login = () => {
     if (window.google?.accounts?.id) {
       initGoogle();
     } else {
-      const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      script.onload = initGoogle;
-      document.body.appendChild(script);
+      const existingScript = document.getElementById("google-gsi-client");
+      if (!existingScript) {
+        const script = document.createElement("script");
+        script.id = "google-gsi-client";
+        script.src = "https://accounts.google.com/gsi/client";
+        script.async = true;
+        script.defer = true;
+        script.onload = initGoogle;
+        document.body.appendChild(script);
+      } else {
+        existingScript.addEventListener("load", initGoogle);
+      }
     }
   }, [dispatch, navigate, redirectTarget]);
 
@@ -127,7 +150,19 @@ const Login = () => {
     }
 
     if (window.google?.accounts?.id) {
-      window.google.accounts.id.prompt();
+      window.google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          const reason =
+            (notification.getNotDisplayedReason && notification.getNotDisplayedReason()) ||
+            (notification.getSkippedReason && notification.getSkippedReason()) ||
+            "";
+          console.warn("Google One Tap prompt skipped/not displayed:", reason);
+          toast.error(
+            "Google sign-in blocked: Origin not authorized. Please verify Authorized Origins in Google Cloud Console.",
+            { duration: 5000 }
+          );
+        }
+      });
     } else {
       toast.error("Google Auth is loading, please try again in a moment");
     }
@@ -227,8 +262,20 @@ const Login = () => {
           </div>
 
           <div className="space-y-2.5">
-            {/* Google Sign-In with Native GIS Overlay */}
-            <div className="relative w-full overflow-hidden rounded-xl">
+            {/* Native Google Sign-In Button Container */}
+            <div
+              className={`w-full flex justify-center items-center transition-all duration-200 ${
+                googleReady ? "min-h-[44px] opacity-100" : "h-0 overflow-hidden opacity-0 pointer-events-none"
+              }`}
+            >
+              <div
+                ref={googleBtnRef}
+                className="w-full flex justify-center items-center"
+              />
+            </div>
+
+            {/* Fallback button shown while Google SDK is loading or if Google fails to mount */}
+            {!googleReady && (
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
@@ -237,12 +284,7 @@ const Login = () => {
                 <FcGoogle className="text-xl shrink-0 group-hover:scale-105 transition-transform" />
                 <span>Sign in with Google</span>
               </button>
-              <div
-                ref={googleBtnRef}
-                className="absolute inset-0 opacity-[0.0001] cursor-pointer overflow-hidden z-10 flex items-center justify-center pointer-events-auto"
-                title="Sign in with Google"
-              />
-            </div>
+            )}
           </div>
         </div>
 
